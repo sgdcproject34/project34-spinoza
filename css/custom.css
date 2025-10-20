@@ -1,0 +1,102 @@
+﻿/* 
+    
+The purpose of this stylesheet is to add custom styling to the SSRPM wizard. If you want to activate an selector you have te end the comment above by typing */ 
+
+/* 
+    
+    /* Sections:
+
+    1. Typography
+    2. Logo
+    3. Color
+    4. Background
+
+*/
+
+
+/* 1. Typography
+---------------------------------------
+*/
+
+.form-control-bold{
+    font-weight:bold;
+}
+
+/* 2. Logo
+---------------------------------------
+*/
+
+/* Add your logo. Make sure the height of the logo you load is 35px */
+.logo {
+    background-image:url();
+}
+
+/* Change the thumbnail logo in the wizard title bar. Make sure the image width and height are 100px */
+.wizard-title {
+    background-image:url();
+}
+
+/*
+    3. Color
+---------------------------------------
+*/
+
+/* This wil change the text color in the formheader */
+.formheader {
+    color: !important
+}
+
+/* Change the color of the progress bar */
+.progress-bar {
+    background-color:;
+}
+
+/* change the border color of the progressbar steps */
+.progressbar-step {
+    border-color:;
+}
+
+/* change the filling color of the progressbar steps */
+.progressbar-step-filled {
+    background-color:;
+}
+
+/* change the text color of the icon text on the start page */
+.icon {
+    color:;
+}
+
+/* change the background color of the pop out wizard */
+.body-wizard {
+    background-color:;
+}
+
+/* change the border color and text color of the back and forward buttons */
+.btn-submit {
+    border-color:;
+    /*text*/color:;
+}
+
+/* change the hover color of the back and forward buttons */
+.btn-submit:hover {
+    background-color:;
+}
+
+/* change the color of the label text */
+label {
+    color:;
+}
+
+/* change the color of the links on the home page when not using the wizard overlay*/
+.ssrpm-label {
+    color:;
+}
+/* 4. Background
+---------------------------------------
+*/
+
+/* This is the default background image. If you want to show custom images then override the default background images within the Images folder with an high-res image of your choosing */
+.body-image {
+    background: url(../images/Background01.jpg) no-repeat center fixed;
+    background-size: cover;
+}
