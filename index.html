@@ -1,0 +1,167 @@
+<!DOCTYPE html><!--[if IE 8 ]> <html dir="ltr" lang="en-US" class="no-js ie8 oldie"> <![endif]--><html><head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=9; IE=8; IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>
+        SSRPM Web Interface
+    </title>
+    <link href="css/css.css" rel="stylesheet">
+
+    <script src="js/modernizr.js"></script>
+
+    <!--<link href="/Content/mobiel.css" rel="stylesheet" type="text/css" media="screen and (max-width: 600px)" />-->
+        <link href="css/custom.css" rel="stylesheet" type="text/css">
+
+    <link href="css/ssrpm.css" rel="stylesheet" type="text/css">
+
+    <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="images/favicon.ico" type="image/ico">
+
+    <!--[if gte IE 5]>
+        <link href="/Content/ssrpm-ie-only.css" rel="stylesheet" type="text/css" />
+    <![endif]-->
+    <script src="js/jquery.js"></script>
+
+    <script src="js/jqueryval.js"></script>
+
+    <script src="js/jquery-ui.js"></script>
+
+    <script src="js/CommonFunctions.js"></script>
+
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            AjaxPostDeviceInfo();
+        });
+
+        function AjaxPostDeviceInfo() {
+            var data = new Array;
+            data.push({ name: 'isMobile', value: IsMobile() });
+            data.push({ name: 'width', value: $(window).width() });
+            data.push({ name: 'height', value: $(window).height() });
+            
+            $.ajax({
+                url: '/Home/SetDeviceInfo',
+                type: 'POST',
+                data: data,
+                success: function (result) {
+                    if (result.Success) {
+
+                    }
+                    else {
+
+                    }
+                }
+            });
+        }
+
+        $(window).resize(function () {
+            waitForFinalEvent(AjaxPostDeviceInfo(), 500, "UniqueEventIdentifierPostDeviceInfo");
+        });
+    </script>
+</head>
+
+<body class="body-image" scroll="no">
+    <div class="container-fluid">
+        <div class="row width-100-percent">
+            <div class="col-sm-2"></div>
+            <div class="col-sm-2"></div>
+            <div class="col-sm-2"></div>
+            <div class="col-sm-2"></div>
+            <div class="col-sm-2"></div>
+            <div class="col-sm-2">
+            </div>
+        </div>
+    </div>   <!--End container -->
+
+    <div class="hidden-field" id="token"></div>
+    <div class="logo-body">
+        <div class="logo-container">
+                <div class="logo">
+        </div>
+    </div>
+
+
+
+    <div class="ssrpmbody">
+        <!-- Modal -->
+        <div class="faq-modal modal fade bg-white" id="FaqModal" tabindex="-1" role="dialog" aria-hidden="true"> </div>
+        <!-- /.modal -->
+            <a href="/Home/FAQ" class="btn-glyph-faq" aria-label="Left Align" data-toggle="modal" data-target="#FaqModal">
+                <span class="fa-14 fa fa-question-circle" aria-hidden="true" id="FaqIcon" title="FAQ" data-placement="left" data-original-title="FAQ"></span>
+            </a>
+                
+<div class="formheader">
+    <div class="SSRPM-icon form-icon"></div>
+    <div class="formheader-vertical">
+        <div class="formheader-text">Welkom! Hier kunt u eenvoudig uw wachtwoord wijzigen.</div>
+    </div>
+</div>
+
+
+<div class="progress-div"><div class="progress"><div class="progress-bar" role="progressbar" style="width:430px"></div></div><div class="progress-steps"></div></div>
+
+<div class="form-body">
+    <div class="option-icons col-xs-3">
+
+                <div class="icon-container" onclick="OpenAction('https://lucasenlucas.github.io/sgdcproject/aanmelden', 'Aanmelden');">
+                    <i class="enroll-icon icon"></i>
+                    <label class="ssrpm-label">Aanmelden</label>
+                </div>
+                <div class="icon-container" onclick="OpenAction('https://lucasenlucas.github.io/sgdcproject/wachtwoord-vergeet/', 'Wachtwoord vergeten');">
+                    <i class="reset-icon icon"></i>
+                    <label class="ssrpm-label">Wachtwoord vergeten</label>
+                </div>
+                <div class="icon-container" onclick="OpenAction('https://lucasenlucas.github.io/sgdcproject/aanmelden', 'Wachtwoord wijzigen');">
+                    <i class="change-icon icon"></i>
+                    <label class="ssrpm-label">Wachtwoord wijzigen</label>
+                </div>
+    </div>
+</div>
+
+<div id="overlay-container" style="z-index:100;position:relative;"></div>
+    </div>
+
+
+
+    <script src="js/bootstrap.js"></script>
+
+    
+    <script type="text/javascript">
+        function OpenAction(Url, Title)
+        {
+            if (0 && !IsMobile())
+            {
+                ShowAsWizard(Url + "?LanguageId=19", Title);
+            }
+            else
+            {
+                window.location.href = Url;// + "?IsMobile=" + (19 ? 1 : 0);
+            }
+        }
+    </script>
+
+
+    <script type="text/javascript">
+        $('#FaqIcon').tooltip();
+
+        $(document).ready(function () {
+            setTimeout(
+                function () {
+                    var el = $('[autofocus="autofocus"]');
+                    if (el.length > 0) {
+                        if (el[0].type == "text")
+                            el[0].selectionStart = el[0].selectionEnd = el[0].value.length;
+                        el[0].focus();
+                    }
+                }, 250);
+        });
+
+        $('#FaqModal').on('hidden.bs.modal', function () {
+            $(this).data('bs.modal', null);
+        });
+    </script>
+
+
+</div></body></html>
