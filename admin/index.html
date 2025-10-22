@@ -2,107 +2,159 @@
 <html lang="nl">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Dashboard - SSRPM</title>
-  <link rel="shortcut icon" href="../images/favicon.ico" type="image/x-icon" />
-  <link rel="icon" href="../images/favicon.ico" type="image/ico" />
-
-  <!-- Optional: keep your original CSS links if they include brand/logo assets -->
-  <link href="../css/css.css" rel="stylesheet" />
-  <link href="../css/custom.css" rel="stylesheet" type="text/css" />
-  <link href="../css/ssrpm.css" rel="stylesheet" type="text/css" />
-
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Project 34 Paneel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="icon" href="../images/favicon.ico" />
   <style>
-  /* ===== Clean Light Theme (Spinoza) ===== */
-  :root{
-    --bg:#FFFFFF;
-    --surface:#FFFFFF;
-    --surface-2:#FAFBFC;
-    --text:#0B1220;
-    --muted:#5E6A85;
-    --line:rgba(11,18,32,0.10);
-    --primary:#4A90E2;
-    --primary-600:#3B7BC4;
-    --success:#2FB36B;
-    --danger:#DC3545;
-    --shadow-1:0 6px 24px rgba(2,10,24,.06);
-    --shadow-2:0 18px 48px rgba(2,10,24,.08);
-    --r-lg:16px; --r-md:12px; --r-sm:10px;
-    --ring:0 0 0 3px rgba(74,144,226,.28);
-  }
+    /* =====================
+       LIGHT THEME + TOKENS
+       ===================== */
+    :root{
+      --bg: #f7f9fc;
+      --panel: #ffffff;
+      --panel-2: #f3f6fb;
+      --text: #0b1220;
+      --muted: #5b6b8a;
+      --line: rgba(10,18,32,0.08);
+      --brand: #4A90E2; /* Spinoza-ish blauw uit jouw palette */
+      --brand-2: #50C878; /* groen */
+      --warn: #ffb020;
+      --danger: #e53935;
+      --radius-xl: 22px;
+      --radius-lg: 16px;
+      --radius: 12px;
+      --shadow-1: 0 6px 20px rgba(15,23,42,.08);
+      --shadow-2: 0 12px 32px rgba(15,23,42,.12);
+      --glass: rgba(255,255,255,.75);
+      --glass-border: rgba(255,255,255,.45);
+      /* Stel hier je Spinoza achtergrond in (vervang pad indien nodig) */
+      --bg-image: url('../images/spinoza-bg.jpg');
+    }
 
-  html,body{height:100%}
-  body{
-    margin:0; background:var(--bg); color:var(--text);
-    font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
-    -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
-    position:relative; min-height:100%;
-  }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--text); background:var(--bg);
+      overflow-x:hidden; 
+      --grad: radial-gradient(1200px 800px at 10% -10%, rgba(74,144,226,.22), transparent 55%),
+               radial-gradient(1400px 900px at 110% 10%, rgba(80,200,120,.20), transparent 60%);
+    }
 
-  /* Single subtle corner watermark */
-  body::after{
-    content:""; position:fixed; right:24px; bottom:24px; width:160px; height:160px; pointer-events:none; z-index:0;
-    background:url('../images/spinoza-logo.svg') center/contain no-repeat;
-    opacity:.06; filter:grayscale(100%);
-  }
+    /* Hero background met subtiele parallax */
+    .bg-hero{
+      position:fixed; inset:0; z-index:-1; overflow:hidden; pointer-events:none;
+      background:
+        var(--grad),
+        linear-gradient(180deg, rgba(255,255,255,.8), rgba(255,255,255,.95)),
+        var(--bg-image);
+      background-blend-mode: normal, screen, multiply;
+      background-size: cover, auto, cover;
+      background-position: center; filter:saturate(1.05);
+    }
 
-  .topbar{position:sticky; top:0; z-index:50; backdrop-filter:saturate(140%) blur(8px);
-    background:rgba(255,255,255,.92); border-bottom:1px solid var(--line); box-shadow:0 4px 16px rgba(2,10,24,.06);}
-  .topbar-inner{display:flex; align-items:center; justify-content:space-between; padding:14px 24px; max-width:1200px; margin:0 auto;}
-  .brand{display:flex; align-items:center; gap:10px}
-  .brand-logo{width:36px; height:36px; border-radius:12px; background:linear-gradient(135deg, var(--primary), #86B9F1)}
-  .brand-title{font-weight:800; letter-spacing:.2px}
-  .muted{color:var(--muted); font-size:13.5px}
+    .container{
+      max-width:1200px; margin:0 auto; padding:32px 20px 64px;
+    }
 
-  .container{max-width:1200px; margin:0 auto; padding:24px}
-  .center-wrap{min-height:calc(100dvh - 72px); display:grid; place-items:center; padding:32px 16px}
+    /* Topbar */
+    .topbar{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:16px; margin:16px auto 28px; padding:14px 16px;
+      background:var(--glass); border:1px solid var(--glass-border);
+      border-radius:var(--radius-lg); backdrop-filter: blur(10px);
+      box-shadow: var(--shadow-1);
+    }
+    .brand{
+      display:flex; align-items:center; gap:12px; font-weight:800; letter-spacing:.2px;
+    }
+    .brand .logo{
+      width:40px; height:40px; border-radius:12px; background:linear-gradient(135deg,var(--brand), #7ab9ff);
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,.6), 0 8px 18px rgba(74,144,226,.35);
+    }
+    .brand .title{font-size:18px}
 
-  .auth-card{width:100%; max-width:520px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--shadow-2); padding:28px}
-  .auth-head{display:flex; align-items:center; gap:14px; margin-bottom:18px}
-  .auth-icon{width:44px; height:44px; border-radius:12px; background:linear-gradient(135deg, var(--primary), #86B9F1)}
-  .auth-title{font-size:22px; font-weight:800; margin:0}
+    .top-actions{display:flex; gap:10px; align-items:center}
 
-  .field{display:grid; gap:8px; margin-top:14px}
-  label{color:var(--muted); font-weight:600; font-size:13px}
-  .input{background:#fff; border:1px solid var(--line); color:var(--text); border-radius:var(--r-md); padding:12px 14px; outline:0; transition:box-shadow .15s, border-color .15s; width:100%}
-  .input:focus{box-shadow:var(--ring); border-color:var(--primary)}
-  .btn{appearance:none; border:0; cursor:pointer; user-select:none; text-decoration:none; padding:12px 16px; border-radius:var(--r-md); font-weight:700; letter-spacing:.2px; transition:transform .02s, box-shadow .15s, background .2s; display:inline-flex; align-items:center; justify-content:center; gap:8px}
-  .btn:active{transform:translateY(1px)}
-  .btn-primary{background:linear-gradient(135deg, var(--primary), #86B9F1); color:#0B1220; box-shadow:var(--shadow-1)}
-  .btn-primary:hover{filter:brightness(1.06)}
-  .btn-ghost{background:#fff; color:var(--text); border:1px solid var(--line)}
-  .btn-ghost:hover{background:#F7FBFF}
-  .btn-danger{background:linear-gradient(135deg, #DC3545, #F16A76); color:#fff; box-shadow:var(--shadow-1)}
-  .btn-row{display:flex; gap:10px; flex-wrap:wrap; margin-top:16px}
+    /* Buttons */
+    .btn{appearance:none; border:0; padding:10px 14px; border-radius:12px; font-weight:600; cursor:pointer; transition:transform .08s ease, box-shadow .2s ease, background .2s ease;}
+    .btn:active{transform:translateY(1px)}
+    .btn-primary{background:var(--brand); color:#fff; box-shadow:0 8px 16px rgba(74,144,226,.35)}
+    .btn-primary:hover{box-shadow:0 10px 22px rgba(74,144,226,.45)}
+    .btn-ghost{background:transparent; color:var(--text); border:1px solid var(--line)}
+    .btn-danger{background:var(--danger); color:#fff; box-shadow:0 8px 16px rgba(229,57,53,.28)}
 
-  .progress-shell{height:8px; background:#F3F6FA; border-radius:999px; border:1px solid var(--line); overflow:hidden; margin:10px 0 6px}
-  .progress-bar{height:100%; width:38%; background:linear-gradient(90deg, var(--primary), #86B9F1)}
+    /* Cards */
+    .card{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius-xl); box-shadow:var(--shadow-1);}
+    .card.pad{padding:22px}
 
-  .grid{display:grid; grid-template-columns:1.2fr .8fr; gap:22px}
-  @media (max-width:980px){.grid{grid-template-columns:1fr}}
+    /* LOGIN LAYOUT */
+    .auth-wrap{display:grid; grid-template-columns:1.1fr .9fr; gap:22px; align-items:stretch;}
+    .auth-hero{position:relative; overflow:hidden}
+    .auth-hero .blob{position:absolute; inset:-20%; background:radial-gradient(closest-side, rgba(74,144,226,.12), transparent 70%); animation: float 10s ease-in-out infinite; border-radius:50%;}
+    .auth-hero .blob:nth-child(2){animation-delay:-3s; inset:auto auto -10% -10%; width:70%; height:70%;}
+    .auth-hero-content{position:relative; padding:28px; height:100%; display:flex; flex-direction:column; justify-content:flex-end; gap:12px}
+    .auth-hero h1{margin:0; font-size:38px; letter-spacing:.2px}
+    .auth-hero p{margin:0; color:var(--muted)}
 
-  .card{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--shadow-1); padding:20px}
-  .dash-head{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px}
-  .search{display:flex; gap:10px}
+    .auth-card{display:flex; flex-direction:column; gap:16px}
+    .field{display:flex; flex-direction:column; gap:8px}
+    .label{font-weight:700}
+    .input{padding:12px 14px; border-radius:14px; border:1px solid var(--line); background:#fff; outline:none; font-size:15px; transition: box-shadow .2s ease, border-color .2s ease}
+    .input:focus{border-color:rgba(74,144,226,.55); box-shadow:0 0 0 4px rgba(74,144,226,.18)}
 
-  .list{display:grid; gap:10px}
-  .user-item{background:var(--surface-2); border:1px solid var(--line); padding:14px 14px; border-radius:var(--r-md); display:grid; grid-template-columns:1fr auto; gap:8px; align-items:center; cursor:pointer; transition:border-color .15s, box-shadow .15s, transform .05s, background .2s}
-  .user-item:hover{background:#fff; box-shadow:var(--shadow-1); border-color:rgba(74,144,226,.25)}
-  .user-item.selected{outline:0; box-shadow:var(--ring); border-color:var(--primary)}
-  .user-name{font-weight:700}
-  .timestamp{color:var(--muted); font-size:12px}
+    .auth-actions{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+    .divider{display:flex; align-items:center; gap:10px; color:var(--muted);}
+    .divider:before,.divider:after{content:""; height:1px; flex:1; background:linear-gradient(90deg, transparent, var(--line), transparent)}
 
-  .details .row{display:grid; gap:12px}
-  .detail{border-bottom:1px dashed var(--line); padding-bottom:10px}
-  .detail:last-child{border-bottom:0; padding-bottom:0}
-  .detail label{display:block; color:var(--muted); font-size:12px; margin-bottom:6px}
-  .detail .val{word-break:break-word}
+    /* DASHBOARD */
+    .grid{display:grid; grid-template-columns: 1fr 360px; gap:22px}
+    .dash-header{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px}
+    .search{display:flex; align-items:center; gap:10px}
+    .search .input{width:320px}
 
-  .password-field{background:#F2F5FA; color:#F2F5FA; border:1px solid var(--line); padding:10px 12px; border-radius:var(--r-sm); font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; display:inline-block; min-width:120px; user-select:none; cursor:pointer}
-  .password-field.revealed{color:var(--text); background:#fff; border-color:rgba(11,18,32,.18)}
-  .unlock{display:flex; gap:8px; margin-top:8px}
-  .unlock .input{padding:10px 12px}
-</style>
+    .users{display:flex; flex-direction:column; gap:12px;}
+    .user{
+      display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 16px; border:1px solid var(--line); border-radius:16px; background:#fff; cursor:pointer; transition: transform .08s ease, box-shadow .2s ease, border-color .2s ease;
+    }
+    .user:hover{box-shadow:var(--shadow-1); border-color: rgba(74,144,226,.35)}
+    .user.selected{outline:2px solid rgba(74,144,226,.35); background:linear-gradient(180deg,#fff, #f8fbff)}
+    .user .name{font-weight:700}
+    .user .ts{font-size:12px; color:var(--muted)}
+
+    .sticky{position:sticky; top:22px}
+    .details .row{display:grid; grid-template-columns: 1fr; gap:14px}
+    .detail{padding:12px 14px; border:1px solid var(--line); border-radius:14px; background:#fff}
+    .detail label{display:block; font-weight:700; margin-bottom:6px}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, monospace}
+
+    .pwd{display:inline-block; padding:10px 12px; border-radius:12px; background:#0b1220; color:#0b1220; border:1px solid #2b2f3a; cursor:pointer; user-select:none; min-width:110px}
+    .pwd.revealed{background:#fff; color:#0b1220; border-color:var(--line)}
+
+    .unlock{display:flex; gap:8px; margin-top:8px}
+    .unlock .input{flex:1}
+
+    /* Toasts */
+    .toast-wrap{position:fixed; right:18px; bottom:18px; display:flex; flex-direction:column; gap:10px; z-index:50}
+    .toast{background:#0b1220; color:#fff; padding:12px 14px; border-radius:12px; box-shadow:var(--shadow-2); opacity:0; transform: translateY(8px); animation: in .25s ease forwards}
+
+    /* Animations */
+    @keyframes in{to{opacity:1; transform:translateY(0)}}
+    @keyframes float{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(0,-12px,0)}}
+    .fade-up{opacity:0; transform:translateY(14px); animation: fadeUp .35s ease forwards}
+    @keyframes fadeUp{to{opacity:1; transform:translateY(0)}}
+
+    /* Responsive */
+    @media (max-width: 980px){
+      .auth-wrap{grid-template-columns:1fr}
+      .grid{grid-template-columns:1fr}
+      .search .input{width:100%}
+      .topbar{flex-wrap:wrap}
+    }
+  </style>
 
   <!-- Firebase SDK -->
   <script type="module">
@@ -123,220 +175,225 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // Auth state
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        showDashboard();
-      } else {
-        showLoginForm();
+    // Toast helper
+    const toasts = [];
+    function toast(msg, dur=2800){
+      const wrap = document.querySelector('.toast-wrap') || document.body.appendChild(Object.assign(document.createElement('div'), {className:'toast-wrap'}));
+      const el = Object.assign(document.createElement('div'), {className:'toast', textContent: msg});
+      wrap.appendChild(el);
+      const id = setTimeout(()=>{ el.style.opacity = '0'; el.style.transform='translateY(8px)'; setTimeout(()=>el.remove(), 220)}, dur);
+      toasts.push(id);
+    }
+
+    // Views
+    function renderLogin(){
+      document.body.innerHTML = `
+        <div class="bg-hero" aria-hidden="true"></div>
+        <div class="container">
+          <div class="topbar fade-up" style="animation-delay:.05s">
+            <div class="brand">
+              <div class="logo" aria-hidden="true"></div>
+              <div class="title">Project 34 Paneel</div>
+            </div>
+            <div class="top-actions">
+              <button class="btn btn-ghost" onclick="location.href='https://sgdcproject34.github.io/project34-spinoza/'">Terug naar site</button>
+            </div>
+          </div>
+
+          <div class="auth-wrap">
+            <div class="card pad auth-hero fade-up" style="min-height: 380px; animation-delay:.08s">
+              <div class="blob" style="width:60%; height:60%"></div>
+              <div class="blob" style="right:-5%; top:10%; width:46%; height:46%"></div>
+              <div class="auth-hero-content">
+                <h1>Welkom in het Project 34 Paneel</h1>
+                <p>Beheer je testgegevens, controleer logins en houd alles overzichtelijk in één strak dashboard.</p>
+              </div>
+            </div>
+
+            <div class="card pad auth-card fade-up" style="animation-delay:.12s">
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:10px">
+                <h2 style="margin:0">Admin login</h2>
+                <span style="font-size:12px; color:var(--muted)">Light mode · afgeronde hoeken · animaties</span>
+              </div>
+              <div class="field">
+                <label class="label" for="email">E‑mail</label>
+                <input id="email" type="email" class="input" placeholder="naam@voorbeeld.nl" autocomplete="email" />
+              </div>
+              <div class="field">
+                <label class="label" for="password">Wachtwoord</label>
+                <input id="password" type="password" class="input" placeholder="••••••••" autocomplete="current-password" />
+              </div>
+              <div class="auth-actions">
+                <button class="btn btn-primary" id="btnLogin">Inloggen</button>
+                <button class="btn btn-ghost" id="btnLink">Stuur login‑link</button>
+              </div>
+              <div class="divider">of</div>
+              <div class="auth-actions">
+                <button class="btn" style="background:#eef5ff; color:#1858c6" onclick="document.getElementById('email').focus()">Login met e‑mail / wachtwoord</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // wire up actions
+      document.getElementById('btnLogin').addEventListener('click', async ()=>{
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        if(!email || !password){ toast('Vul je e‑mail en wachtwoord in.'); return; }
+        try{ await signInWithEmailAndPassword(auth, email, password); }
+        catch(err){ toast('Login mislukt: '+ err.message); }
+      });
+
+      document.getElementById('btnLink').addEventListener('click', async ()=>{
+        const email = document.getElementById('email').value.trim();
+        if(!email){ toast('Vul je e‑mail in om een link te ontvangen.'); return; }
+        try{
+          const actionCodeSettings = { url: window.location.href, handleCodeInApp: true };
+          await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+          localStorage.setItem('emailForSignIn', email);
+          toast('Login‑link verstuurd. Check je inbox.');
+        }catch(err){ toast('Kon geen link sturen: '+err.message); }
+      });
+    }
+
+    function renderDashboard(users){
+      document.body.innerHTML = `
+        <div class="bg-hero" aria-hidden="true"></div>
+        <div class="container">
+          <div class="topbar fade-up" style="animation-delay:.05s">
+            <div class="brand">
+              <div class="logo" aria-hidden="true"></div>
+              <div class="title">Project 34 Paneel</div>
+            </div>
+            <div class="top-actions">
+              <button class="btn btn-danger" id="btnLogout">Uitloggen</button>
+            </div>
+          </div>
+
+          <div class="card pad fade-up" style="animation-delay:.08s">
+            <div class="dash-header">
+              <h2 style="margin:0">Gebruikersdashboard</h2>
+              <div class="search">
+                <input id="searchInput" class="input" placeholder="Zoek gebruikersnaam…" />
+              </div>
+            </div>
+            <div class="grid">
+              <div>
+                <div class="users" id="usersList">
+                  ${users.map(u => `
+                    <div class="user" data-id="${u.id}">
+                      <div>
+                        <div class="name">${u.username || 'Onbekend'}</div>
+                        <div class="ts">${u.timestamp?.toDate ? new Date(u.timestamp.toDate()).toLocaleString() : (u.timestamp ? new Date(u.timestamp).toLocaleString() : '')}</div>
+                      </div>
+                      <div class="ts mono">${u.ipAddress || ''}</div>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+              <div class="sticky">
+                <div class="card pad details" id="userDetails" style="display:none">
+                  <h3 style="margin-top:0">Gebruikersdetails</h3>
+                  <div class="row" id="userInfo"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('btnLogout').addEventListener('click', ()=> signOut(auth));
+
+      // search
+      const si = document.getElementById('searchInput');
+      si.addEventListener('input', (e)=>{
+        const term = e.target.value.toLowerCase();
+        document.querySelectorAll('.user').forEach(el => {
+          const name = el.querySelector('.name').textContent.toLowerCase();
+          el.style.display = name.includes(term) ? '' : 'none';
+        });
+      });
+
+      // select user
+      document.querySelectorAll('.user').forEach(el => {
+        el.addEventListener('click', (evt)=>{
+          document.querySelectorAll('.user').forEach(n=>n.classList.remove('selected'));
+          el.classList.add('selected');
+          const id = el.getAttribute('data-id');
+          const u = users.find(x=>x.id===id);
+          const box = document.getElementById('userDetails');
+          const info = document.getElementById('userInfo');
+          box.style.display='block';
+          info.innerHTML = `
+            <div class="detail"><label>Gebruikersnaam</label><div>${u.username || 'Niet beschikbaar'}</div></div>
+            <div class="detail">
+              <label>Wachtwoord</label>
+              <div class="pwd mono" id="pwd-${id}">••••••••</div>
+              <div class="unlock">
+                <input id="code-${id}" type="password" class="input" placeholder="Code invoeren" />
+                <button class="btn btn-primary" id="unlock-${id}">Ontgrendelen</button>
+              </div>
+            </div>
+            <div class="detail"><label>VPN gebruikt</label><div>${u.vpnUsed===true?'Ja':(u.vpnUsed===false?'Nee':'Onbekend')}</div></div>
+            <div class="detail"><label>IP-adres</label><div class="mono">${u.ipAddress||'Niet beschikbaar'}</div></div>
+            <div class="detail"><label>Server locatie</label><div>${u.serverLocation||'Niet beschikbaar'}</div></div>
+            <div class="detail"><label>User‑Agent</label><div class="mono">${u.userAgent||'Niet beschikbaar'}</div></div>
+            <div class="detail"><label>Besturingssysteem</label><div>${u.operatingSystem||'Niet beschikbaar'}</div></div>
+            <div class="detail"><label>Schermgrootte</label><div>${u.screenSize||'Niet beschikbaar'}</div></div>
+            <div class="detail"><label>Taal</label><div>${u.language||'Niet beschikbaar'}</div></div>
+            <div class="detail"><label>Tijdzone</label><div>${u.timezone||'Niet beschikbaar'}</div></div>
+            <div class="detail"><label>Batterij</label><div>${u.battery||'Niet beschikbaar'}</div></div>
+            <div class="detail"><label>Browser history</label><div>${u.browserHistory||'Niet beschikbaar'}</div></div>
+            <div class="detail"><label>Timestamp</label><div>${u.timestamp?.toDate ? new Date(u.timestamp.toDate()).toLocaleString() : (u.timestamp ? new Date(u.timestamp).toLocaleString() : '')}</div></div>
+          `;
+
+          // unlock logic
+          document.getElementById(`unlock-${id}`).addEventListener('click', ()=>{
+            const code = (document.getElementById(`code-${id}`) as HTMLInputElement).value;
+            if(code==='9461'){
+              const pwd = document.getElementById(`pwd-${id}`);
+              pwd.textContent = u.password || 'Niet beschikbaar';
+              pwd.classList.add('revealed');
+            }else{ toast('Onjuiste code!'); }
+          });
+        });
+      });
+    }
+
+    // Auth change
+    onAuthStateChanged(auth, async (user)=>{
+      if(user){
+        try{
+          const snap = await getDocs(query(collection(db,'users'), orderBy('timestamp','desc')));
+          const users = [];
+          snap.forEach(doc=> users.push({ id: doc.id, ...doc.data() }));
+          window._users = users;
+          renderDashboard(users);
+        }catch(err){ toast('Fout bij laden dashboard: '+err.message); renderLogin(); }
+      }else{
+        renderLogin();
       }
     });
 
-    // Login (password)
-    window.loginUser = async function () {
-      const email = document.getElementById('email')?.value?.trim();
-      const password = document.getElementById('password')?.value;
-      try { await signInWithEmailAndPassword(auth, email, password); }
-      catch (error) { alert('Login mislukt: ' + error.message); }
+    // Handle magic link
+    if(isSignInWithEmailLink(auth, window.location.href)){
+      let email = localStorage.getItem('emailForSignIn');
+      if(!email){ email = window.prompt('Bevestig je e‑mail voor login'); }
+      try{ await signInWithEmailLink(auth, email, window.location.href); localStorage.removeItem('emailForSignIn'); }
+      catch(err){ console.error(err); }
     }
 
-    // Email-link (passwordless)
-    window.sendLoginLink = async function () {
-      const email = document.getElementById('email')?.value?.trim();
-      if (!email) { alert('Vul je email in.'); return; }
-      try {
-        const actionCodeSettings = { url: window.location.href, handleCodeInApp: true };
-        await sendSignInLinkToEmail(auth, email, actionCodeSettings);
-        window.localStorage.setItem('emailForSignIn', email);
-        alert('Login link verzonden. Controleer je email.');
-      } catch (e) { alert('Kon geen login link versturen: ' + e.message); }
-    }
-
-    // Complete sign-in if link opened
-    if (isSignInWithEmailLink(auth, window.location.href)) {
-      let email = window.localStorage.getItem('emailForSignIn');
-      if (!email) email = window.prompt('Bevestig je email voor login');
-      signInWithEmailLink(auth, email, window.location.href)
-        .then(() => { window.localStorage.removeItem('emailForSignIn'); })
-        .catch(err => alert('Email link login mislukt: ' + err.message));
-    }
-
-    // Login view
-    function showLoginForm() {
-      document.body.innerHTML = `
-        <header class="topbar">
-          <div class="topbar-inner">
-            <div class="brand">
-              <div class="brand-logo"></div>
-              <div>
-                <div class="brand-title">SSRPM Admin</div>
-                <div class="muted">Beheerportaal • secure access</div>
-              </div>
-            </div>
-            <div class="muted">v1.0</div>
-          </div>
-        </header>
-
-        <main class="center-wrap">
-          <section class="auth-card" role="dialog" aria-labelledby="auth-title">
-            <div class="auth-head">
-              <div class="auth-icon" aria-hidden="true"></div>
-              <div>
-                <h1 id="auth-title" class="auth-title">Admin Login Portal</h1>
-                <p class="muted">Log in met je beheerdersaccount of ontvang een magic link.</p>
-              </div>
-            </div>
-
-            <div class="progress-shell" aria-hidden="true"><div class="progress-bar"></div></div>
-
-            <div class="field">
-              <label for="email">Email</label>
-              <input id="email" type="email" class="input" placeholder="naam@voorbeeld.nl" autofocus />
-            </div>
-            <div class="field">
-              <label for="password">Wachtwoord</label>
-              <input id="password" type="password" class="input" placeholder="••••••••" />
-            </div>
-            <div class="btn-row">
-              <button class="btn btn-ghost" onclick="window.location.href='https://sgdcproject34.github.io/project34-spinoza/'">Terug</button>
-              <button class="btn btn-primary" onclick="loginUser()">Inloggen</button>
-              <button class="btn btn-ghost" onclick="sendLoginLink()">Stuur login link</button>
-            </div>
-          </section>
-        </main>
-      `;
-    }
-
-    // Dashboard view
-    async function showDashboard() {
-      try {
-        const usersSnapshot = await getDocs(query(collection(db, 'users'), orderBy('timestamp', 'desc')));
-        const users = [];
-        usersSnapshot.forEach((doc) => users.push({ id: doc.id, ...doc.data() }));
-
-        const rows = users.map(u => {
-          const ts = (u.timestamp && typeof u.timestamp.toDate === 'function') ? new Date(u.timestamp.toDate()) : null;
-          const tsText = ts ? ts.toLocaleString() : '—';
-          const name = (u.username || 'Onbekend');
-          return `
-            <div class="user-item" onclick="selectUser(event, '${u.id}')">
-              <div class="user-name">${name}</div>
-              <div class="timestamp">${tsText}</div>
-            </div>`
-        }).join('');
-
-        document.body.innerHTML = `
-          <header class="topbar">
-            <div class="topbar-inner">
-              <div class="brand">
-                <div class="brand-logo"></div>
-                <div>
-                  <div class="brand-title">SSRPM Admin</div>
-                  <div class="muted">Gebruikersbeheer</div>
-                </div>
-              </div>
-              <div class="btn-row"><button class="btn btn-danger" onclick="logout()">Uitloggen</button></div>
-            </div>
-          </header>
-
-          <main class="container">
-            <div class="grid">
-              <section class="card">
-                <div class="dash-head">
-                  <h2 style="margin:0">Gebruikers</h2>
-                  <div class="search">
-                    <input id="searchInput" class="input" placeholder="Zoek gebruikersnaam…" />
-                  </div>
-                </div>
-                <div class="list" id="usersList">${rows}</div>
-              </section>
-
-              <aside class="card details" id="userDetails" style="position:sticky; top:16px; height: fit-content;">
-                <div class="dash-head"><h3 style="margin:0">Details</h3></div>
-                <div id="userInfo" class="row muted">Selecteer een gebruiker…</div>
-              </aside>
-            </div>
-          </main>
-        `;
-
-        // Search functionality
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-          const q = e.target.value.toLowerCase();
-          document.querySelectorAll('.user-item').forEach(el => {
-            const name = el.querySelector('.user-name')?.textContent?.toLowerCase() || '';
-            el.style.display = name.includes(q) ? 'grid' : 'none';
-          });
-        });
-
-        // Store users globally
-        window.usersData = users;
-      } catch (error) {
-        console.error('Error loading dashboard:', error);
-        alert('Fout bij laden dashboard: ' + error.message);
+    // expose (optional)
+    window.addEventListener('keydown', (e)=>{
+      if(e.key==='/' && document.getElementById('searchInput')){
+        e.preventDefault(); document.getElementById('searchInput').focus();
       }
-    }
-
-    // Select user
-    window.selectUser = function (ev, userId) {
-      const user = window.usersData.find(u => u.id === userId);
-      if (!user) return;
-
-      document.querySelectorAll('.user-item').forEach(i => i.classList.remove('selected'));
-      ev.currentTarget.classList.add('selected');
-
-      const userInfo = document.getElementById('userInfo');
-      const ts = (user.timestamp && typeof user.timestamp.toDate === 'function') ? new Date(user.timestamp.toDate()).toLocaleString() : '—';
-
-      userInfo.innerHTML = `
-        <div class="detail"><label>Gebruikersnaam</label><div class="val">${user.username || 'Niet beschikbaar'}</div></div>
-        <div class="detail">
-          <label>Wachtwoord</label>
-          <div class="password-field" id="password-${userId}" onclick="togglePassword('${userId}')">••••••••</div>
-          <div class="unlock hidden" id="unlock-${userId}">
-            <input type="password" class="input" placeholder="Code invoeren" id="unlockCode-${userId}" />
-            <button class="btn btn-primary" onclick="unlockPassword('${userId}')">Ontgrendelen</button>
-          </div>
-        </div>
-        <div class="detail"><label>VPN gebruikt</label><div class="val">${user.vpnUsed === true ? 'Ja' : (user.vpnUsed === false ? 'Nee' : 'Onbekend')}</div></div>
-        <div class="detail"><label>IP-adres</label><div class="val">${user.ipAddress || 'Niet beschikbaar'}</div></div>
-        <div class="detail"><label>Server Locatie</label><div class="val">${user.serverLocation || 'Niet beschikbaar'}</div></div>
-        <div class="detail"><label>User-Agent</label><div class="val">${user.userAgent || 'Niet beschikbaar'}</div></div>
-        <div class="detail"><label>Besturingssysteem</label><div class="val">${user.operatingSystem || 'Niet beschikbaar'}</div></div>
-        <div class="detail"><label>Schermgrootte</label><div class="val">${user.screenSize || 'Niet beschikbaar'}</div></div>
-        <div class="detail"><label>Taal</label><div class="val">${user.language || 'Niet beschikbaar'}</div></div>
-        <div class="detail"><label>Tijdzone</label><div class="val">${user.timezone || 'Niet beschikbaar'}</div></div>
-        <div class="detail"><label>Batterij</label><div class="val">${user.battery || 'Niet beschikbaar'}</div></div>
-        <div class="detail"><label>Browser History</label><div class="val">${user.browserHistory || 'Niet beschikbaar'}</div></div>
-        <div class="detail"><label>Timestamp</label><div class="val">${ts}</div></div>
-      `;
-    }
-
-    // Toggle password field (show unlock)
-    window.togglePassword = function (userId) {
-      const el = document.getElementById('unlock-' + userId);
-      if (!el) return;
-      el.classList.toggle('hidden');
-    }
-
-    // Unlock password (DEMO: static code)
-    window.unlockPassword = function (userId) {
-      const code = document.getElementById('unlockCode-' + userId)?.value;
-      if (code === '9461') {
-        const user = window.usersData.find(u => u.id === userId);
-        const field = document.getElementById('password-' + userId);
-        field.textContent = user.password || 'Niet beschikbaar';
-        field.classList.add('revealed');
-        document.getElementById('unlock-' + userId).classList.add('hidden');
-      } else {
-        alert('Onjuiste code!');
-      }
-    }
-
-    // Logout
-    window.logout = function () { signOut(auth); }
+    });
   </script>
 </head>
 <body>
-  <!-- Content dynamically injected by JS -->
+  <!-- Content is rendered by JS -->
+  <div class="bg-hero" aria-hidden="true"></div>
 </body>
 </html>
