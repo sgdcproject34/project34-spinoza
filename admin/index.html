@@ -14,27 +14,39 @@
 
   <style>
     :root {
-      --bg: #0b1220;
-      --bg-soft: #0f1a33;
-      --card: #10192d;
-      --card-2: #0f1730;
-      --text: #e6ecff;
-      --muted: #9cb1d6;
-      --line: rgba(255,255,255,0.08);
-      --primary: #4a90e2; /* Lucas primary blue */
+      --bg: #F5F7FB;
+      --bg-soft: #EEF3FB;
+      --card: #FFFFFF;
+      --card-2: #FAFCFF;
+      --text: #0b1220;
+      --muted: #4b5874;
+      --line: rgba(11,18,32,0.10);
+      --primary: #4A90E2; /* Spinoza/HTH primary blue */
       --primary-600: #3b7bc4;
-      --success: #50c878;
+      --success: #50C878;
       --danger: #dc3545;
-      --warning: #ffd66b;
+      --warning: #FFD66B;
       --radius-lg: 16px;
       --radius-md: 12px;
       --radius-sm: 10px;
-      --shadow-1: 0 6px 24px rgba(0,0,0,0.25);
-      --shadow-2: 0 10px 30px rgba(0,0,0,0.35);
-      --ring: 0 0 0 3px rgba(74,144,226,0.35);
+      --shadow-1: 0 6px 24px rgba(2,10,24,0.06);
+      --shadow-2: 0 16px 40px rgba(2,10,24,0.08);
+      --ring: 0 0 0 3px rgba(74,144,226,0.30);
+      --logo-bg-url: url('../images/spinoza-logo.svg');
     }
 
-    html, body { height: 100%; }
+    html, body {
+      margin: 0;
+      background: radial-gradient(1200px 800px at 20% -10%, #E7F0FF 0%, transparent 60%),
+                  radial-gradient(1200px 900px at 110% 20%, #F2F7FF 0%, transparent 65%),
+                  var(--bg);
+      color: var(--text);
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      position: relative;
+      min-height: 100%;
+    }
     body {
       margin: 0;
       background: radial-gradient(1200px 800px at 20% -10%, #1a2a55 0%, transparent 60%),
@@ -54,7 +66,7 @@
     .topbar {
       position: sticky; top: 0; z-index: 50;
       backdrop-filter: saturate(140%) blur(10px);
-      background: linear-gradient(180deg, rgba(16,25,45,0.9), rgba(16,25,45,0.7));
+      background: linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0.75));
       border-bottom: 1px solid var(--line);
     }
     .topbar-inner { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; }
@@ -118,7 +130,7 @@
     @media (max-width: 980px){ .grid { grid-template-columns: 1fr; } }
 
     .card {
-      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)), var(--card);
+      background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.88)), var(--card);
       border: 1px solid var(--line);
       border-radius: var(--radius-lg);
       box-shadow: var(--shadow-1);
@@ -133,7 +145,7 @@
     .user-item {
       background: var(--card-2); border: 1px solid var(--line); padding: 14px 14px; border-radius: var(--radius-md);
       display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; cursor: pointer;
-      transition: border-color .15s ease, box-shadow .15s ease, transform .05s ease;
+      transition: border-color .15s ease, box-shadow .15s ease, transform .05s ease, background .2s ease;
     }
     .user-item:hover { box-shadow: var(--shadow-1); border-color: rgba(74,144,226,0.35); }
     .user-item.selected { outline: none; box-shadow: var(--ring); border-color: var(--primary); }
@@ -151,11 +163,34 @@
       padding: 10px 12px; border-radius: var(--radius-sm); font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
       display: inline-block; min-width: 120px; user-select: none; cursor: pointer;
     }
-    .password-field.revealed { color: var(--text); background: #0b1220; border-color: rgba(255,255,255,0.16); }
+    .password-field.revealed { color: var(--text); background: #ffffff; border-color: rgba(11,18,32,0.16); }
 
     .unlock { display: flex; gap: 8px; margin-top: 8px; }
     .unlock .input { padding: 10px 12px; }
-  </style>
+    /* Subtle repeating Spinoza logo watermark */
+    body::before {
+      content: "";
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background-image:
+        radial-gradient(circle at 20% 20%, rgba(74,144,226,0.08) 0, rgba(74,144,226,0) 40%),
+        radial-gradient(circle at 80% 0%, rgba(80,200,120,0.06) 0, rgba(80,200,120,0) 45%),
+        var(--logo-bg-url);
+      background-repeat: no-repeat, no-repeat, repeat;
+      background-size: 800px 800px, 900px 900px, 240px 240px; /* logo tile size */
+      background-position: left -200px top -200px, right -300px top -250px, 0 0;
+      opacity: 0.06; /* very subtle */
+      filter: grayscale(100%);
+    }
+
+    /* PNG fallback if SVG not available */
+    @supports not (background: var(--logo-bg-url)) {
+      body::before { background-image:
+        radial-gradient(circle at 20% 20%, rgba(74,144,226,0.08) 0, rgba(74,144,226,0) 40%),
+        radial-gradient(circle at 80% 0%, rgba(80,200,120,0.06) 0, rgba(80,200,120,0) 45%),
+        url('../images/spinoza-logo.png'); }
+    }
+
+</style>
 
   <!-- Firebase SDK -->
   <script type="module">
