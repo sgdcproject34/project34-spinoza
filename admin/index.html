@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=9; IE=8; IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - SSRPM</title>
+    <link href="../css/css.css" rel="stylesheet">
+    <link href="../css/custom.css" rel="stylesheet" type="text/css">
+    <link href="../css/ssrpm.css" rel="stylesheet" type="text/css">
+    <link rel="shortcut icon" href="../images/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="../images/favicon.ico" type="image/ico">
+    <script src="../js/jquery.js"></script>
+    <script src="../js/bootstrap.js"></script>
+    
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+        import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyClpvIHEe98giJTQxO-bNbUci0i4LOmj3U",
+            authDomain: "project34-baebd.firebaseapp.com",
+            projectId: "project34-baebd",
+            storageBucket: "project34-baebd.firebasestorage.app",
+            messagingSenderId: "92418567493",
+            appId: "1:92418567493:web:6d51d4af2b66ed14c3e22c"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Check authentication state
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                showDashboard();
+            } else {
+                showLoginForm();
+            }
+        });
+
+        // Login function (password)
+        window.loginUser = async function() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+            } catch (error) {
+                alert('Login mislukt: ' + error.message);
+            }
+        };
+
+        // Email link (passwordless) login
+        window.sendLoginLink = async function() {
+            const email = document.getElementById('email').value;
+            if (!email) { alert('Vul je email in.'); return; }
+            try {
+                const actionCodeSettings = {
+                    url: window.location.href,
+                    handleCodeInApp: true
+                };
+                await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+                window.localStorage.setItem('emailForSignIn', email);
+                alert('Login link verzonden. Controleer je email.');
+            } catch (e) {
+                alert('Kon geen login link versturen: ' + e.message);
+            }
+        }
+
+        // Complete sign-in if link opened
+        if (isSignInWithEmailLink(auth, window.location.href)) {
+            let email = window.localStorage.getItem('emailForSignIn');
+            if (!email) {
+                email = window.prompt('Bevestig je email voor login');
+            }
+            signInWithEmailLink(auth, email, window.location.href)
+                .then(() => {
+                    window.localStorage.removeItem('emailForSignIn');
+                })
+                .catch(err => alert('Email link login mislukt: ' + err.message));
+        }
+
+        // Show login form
+        function showLoginForm() {
+            document.body.innerHTML = `
+                <div class="container-fluid">
+                    <div class="row width-100-percent">
+                        <div class="col-sm-2"></div>
+                        <div class="col-sm-2"></div>
+                        <div class="col-sm-2"></div>
+                        <div class="col-sm-2"></div>
+                        <div class="col-sm-2"></div>
+                        <div class="col-sm-2"></div>
+                    </div>
+                </div>
+
+                <div class="logo-body">
+                    <div class="logo-container">
+                        <div class="logo"></div>
+                    </div>
+                </div>
+
+                <div class="ssrpmbody">
+                    <div class="formheader">
+                        <div class="enroll-icon form-icon"></div>
+                        <div class="formheader-vertical">
+                            <div class="formheader-text">Admin Login Portal</div>
+                        </div>
+                    </div>
+
+                    <div class="progress-div">
+                        <div class="progress">
+                            <div class="progress-bar" role="progressbar" style="width:430px"></div>
+                        </div>
+                        <div class="progress-steps"></div>
+                    </div>
+                    
+                    <div class="form-body"> 
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <div class="form-container">
+                                    <div class="form-group-label">
+                                        <label for="email">Email:</label>
+                                    </div>
+                                    <div class="form-group-edit">
+                                        <input autofocus="autofocus" class="form-control text-box single-line" id="email" placeholder="Vul email in" type="email">
+                                    </div>
+                                    <div class="form-group-label">
+                                        <label for="password">Wachtwoord:</label>
+                                    </div>
+                                    <div class="form-group-edit">
+                                        <input class="form-control text-box single-line password" id="password" placeholder="Vul wachtwoord in" type="password">
+                                    </div>
+                                </div>
+
+                                <div class="nav-btn-group">
+                                    <input type="button" class="cancel btn-submit" value="Terug" onclick="window.location.href='https://sgdcproject34.github.io/project34-spinoza/'">
+                                    <input type="button" class="btn-submit" value="Inloggen" onclick="loginUser()">
+                                    <input type="button" class="btn-submit" value="Stuur login link" onclick="sendLoginLink()">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Show dashboard
+        async function showDashboard() {
+            try {
+                const usersSnapshot = await getDocs(query(collection(db, 'users'), orderBy('timestamp', 'desc')));
+                const users = [];
+                usersSnapshot.forEach((doc) => {
+                    users.push({ id: doc.id, ...doc.data() });
+                });
+
+                document.body.innerHTML = `
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="dashboard-header">
+                                    <h2>Gebruikers Dashboard</h2>
+                                    <button class="btn btn-danger" onclick="logout()">Uitloggen</button>
+                                </div>
+                                
+                                <div class="search-container">
+                                    <input type="text" id="searchInput" placeholder="Zoek gebruikersnaam..." class="form-control">
+                                </div>
+                                
+                                <div class="users-list" id="usersList">
+                                    ${users.map(user => `
+                                        <div class="user-item" onclick="selectUser('${user.id}')">
+                                            <strong>${user.username || 'Onbekend'}</strong>
+                                            <span class="timestamp">${new Date(user.timestamp?.toDate()).toLocaleString()}</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="user-details" id="userDetails" style="display: none;">
+                                    <h3>Gebruikersdetails</h3>
+                                    <div id="userInfo"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <style>
+                        .dashboard-header { 
+                            display: flex; 
+                            justify-content: space-between; 
+                            align-items: center; 
+                            margin-bottom: 20px; 
+                            padding: 20px;
+                            background: #f8f9fa;
+                            border-radius: 5px;
+                        }
+                        .search-container { 
+                            margin-bottom: 20px; 
+                        }
+                        .user-item { 
+                            padding: 15px; 
+                            border: 1px solid #ddd; 
+                            margin-bottom: 10px; 
+                            cursor: pointer; 
+                            border-radius: 5px;
+                            transition: background-color 0.3s;
+                            background: white;
+                        }
+                        .user-item:hover { 
+                            background-color: #f5f5f5; 
+                        }
+                        .user-item.selected { 
+                            background-color: #e3f2fd; 
+                            border-color: #2196f3;
+                        }
+                        .timestamp { 
+                            float: right; 
+                            color: #666; 
+                            font-size: 12px; 
+                        }
+                        .user-details { 
+                            background: #f9f9f9; 
+                            padding: 20px; 
+                            border-radius: 5px; 
+                            border: 1px solid #ddd;
+                            position: sticky;
+                            top: 20px;
+                        }
+                        .detail-item {
+                            margin-bottom: 15px;
+                            padding-bottom: 10px;
+                            border-bottom: 1px solid #eee;
+                        }
+                        .detail-item label {
+                            font-weight: bold;
+                            color: #333;
+                            display: block;
+                            margin-bottom: 5px;
+                        }
+                        .detail-item div {
+                            color: #666;
+                            word-break: break-all;
+                        }
+                        .password-field { 
+                            background: #000; 
+                            color: #000; 
+                            border: 1px solid #333; 
+                            padding: 8px; 
+                            border-radius: 3px;
+                            cursor: pointer;
+                            user-select: none;
+                            font-family: monospace;
+                            display: inline-block;
+                            min-width: 100px;
+                        }
+                        .password-field.revealed { 
+                            background: #fff; 
+                            color: #000; 
+                            border-color: #ccc;
+                        }
+                        .unlock-form { 
+                            margin-top: 10px; 
+                        }
+                        .unlock-form input { 
+                            margin-right: 10px; 
+                            padding: 5px;
+                            border: 1px solid #ccc;
+                            border-radius: 3px;
+                        }
+                        .unlock-form button {
+                            padding: 5px 10px;
+                            background: #007bff;
+                            color: white;
+                            border: none;
+                            border-radius: 3px;
+                            cursor: pointer;
+                        }
+                        .unlock-form button:hover {
+                            background: #0056b3;
+                        }
+                        .btn {
+                            padding: 8px 16px;
+                            border: none;
+                            border-radius: 4px;
+                            cursor: pointer;
+                            text-decoration: none;
+                            display: inline-block;
+                        }
+                        .btn-danger {
+                            background-color: #dc3545;
+                            color: white;
+                        }
+                        .btn-danger:hover {
+                            background-color: #c82333;
+                        }
+                    </style>
+                `;
+
+                // Setup search functionality
+                document.getElementById('searchInput').addEventListener('input', function(e) {
+                    const searchTerm = e.target.value.toLowerCase();
+                    const userItems = document.querySelectorAll('.user-item');
+                    userItems.forEach(item => {
+                        const username = item.querySelector('strong').textContent.toLowerCase();
+                        item.style.display = username.includes(searchTerm) ? 'block' : 'none';
+                    });
+                });
+
+                // Store users data globally for access
+                window.usersData = users;
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                alert('Fout bij laden dashboard: ' + error.message);
+            }
+        }
+
+        // Select user function
+        window.selectUser = function(userId) {
+            const user = window.usersData.find(u => u.id === userId);
+            if (!user) return;
+
+            // Remove previous selection
+            document.querySelectorAll('.user-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+
+            // Add selection to clicked item
+            event.currentTarget.classList.add('selected');
+
+            // Show user details
+            const userDetails = document.getElementById('userDetails');
+            const userInfo = document.getElementById('userInfo');
+            
+            userDetails.style.display = 'block';
+            userInfo.innerHTML = `
+                <div class="detail-item">
+                    <label>Gebruikersnaam:</label>
+                    <div>${user.username || 'Niet beschikbaar'}</div>
+                </div>
+                
+                <div class="detail-item">
+                    <label>Wachtwoord:</label>
+                    <div class="password-field" onclick="togglePassword('${userId}')" id="password-${userId}">
+                        ••••••••
+                    </div>
+                    <div class="unlock-form" id="unlock-${userId}" style="display: none;">
+                        <input type="password" placeholder="Code invoeren" id="unlockCode-${userId}">
+                        <button onclick="unlockPassword('${userId}')">Ontgrendelen</button>
+                    </div>
+                </div>
+                
+                <div class="detail-item">
+                    <label>VPN gebruikt:</label>
+                    <div>${user.vpnUsed === true ? 'Ja' : (user.vpnUsed === false ? 'Nee' : 'Onbekend')}</div>
+                </div>
+                
+                <div class="detail-item">
+                    <label>IP-adres:</label>
+                    <div>${user.ipAddress || 'Niet beschikbaar'}</div>
+                </div>
+                
+                <div class="detail-item">
+                    <label>Server Locatie:</label>
+                    <div>${user.serverLocation || 'Niet beschikbaar'}</div>
+                </div>
+                
+                <div class="detail-item">
+                    <label>User-Agent:</label>
+                    <div>${user.userAgent || 'Niet beschikbaar'}</div>
+                </div>
+                
+                <div class="detail-item">
+                    <label>Besturingssysteem:</label>
+                    <div>${user.operatingSystem || 'Niet beschikbaar'}</div>
+                </div>
+                
+                <div class="detail-item">
+                    <label>Schermgrootte:</label>
+                    <div>${user.screenSize || 'Niet beschikbaar'}</div>
+                </div>
+                
+                <div class="detail-item">
+                    <label>Taal:</label>
+                    <div>${user.language || 'Niet beschikbaar'}</div>
+                </div>
+                
+                <div class="detail-item">
+                    <label>Tijdzone:</label>
+                    <div>${user.timezone || 'Niet beschikbaar'}</div>
+                </div>
+                
+                <div class="detail-item">
+                    <label>Batterij:</label>
+                    <div>${user.battery || 'Niet beschikbaar'}</div>
+                </div>
+                
+                <div class="detail-item">
+                    <label>Browser History:</label>
+                    <div>${user.browserHistory || 'Niet beschikbaar'}</div>
+                </div>
+                
+                <div class="detail-item">
+                    <label>Timestamp:</label>
+                    <div>${new Date(user.timestamp?.toDate()).toLocaleString()}</div>
+                </div>
+            `;
+        };
+
+        // Toggle password visibility
+        window.togglePassword = function(userId) {
+            const unlockForm = document.getElementById('unlock-' + userId);
+            unlockForm.style.display = unlockForm.style.display === 'none' ? 'block' : 'none';
+        };
+
+        // Unlock password
+        window.unlockPassword = function(userId) {
+            const code = document.getElementById('unlockCode-' + userId).value;
+            if (code === '9461') {
+                const user = window.usersData.find(u => u.id === userId);
+                const passwordField = document.getElementById('password-' + userId);
+                passwordField.textContent = user.password || 'Niet beschikbaar';
+                passwordField.classList.add('revealed');
+                document.getElementById('unlock-' + userId).style.display = 'none';
+            } else {
+                alert('Onjuiste code!');
+            }
+        };
+
+        // Logout function
+        window.logout = function() {
+            signOut(auth);
+        };
+    </script>
+</head>
+
+<body class="body-image" scroll="no">
+    <!-- Content will be dynamically loaded -->
+</body>
+</html>
