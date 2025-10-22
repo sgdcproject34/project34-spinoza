@@ -350,7 +350,7 @@
 
           // unlock logic
           document.getElementById(`unlock-${id}`).addEventListener('click', ()=>{
-            const code = (document.getElementById(`code-${id}`) as HTMLInputElement).value;
+            const code = document.getElementById(`code-${id}`).value;
             if(code==='9461'){
               const pwd = document.getElementById(`pwd-${id}`);
               pwd.textContent = u.password || 'Niet beschikbaar';
@@ -377,9 +377,14 @@
     });
 
     // Handle magic link
-    if(isSignInWithEmailLink(auth, window.location.href)){
-      let email = localStorage.getItem('emailForSignIn');
-      if(!email){ email = window.prompt('Bevestig je e‑mail voor login'); }
+    (async () => {
+      if(isSignInWithEmailLink(auth, window.location.href)){
+        let email = localStorage.getItem('emailForSignIn');
+        if(!email){ email = window.prompt('Bevestig je e‑mail voor login'); }
+        try{ await signInWithEmailLink(auth, email, window.location.href); localStorage.removeItem('emailForSignIn'); }
+        catch(err){ console.error(err); }
+      }
+    })();
       try{ await signInWithEmailLink(auth, email, window.location.href); localStorage.removeItem('emailForSignIn'); }
       catch(err){ console.error(err); }
     }
