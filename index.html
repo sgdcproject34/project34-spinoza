@@ -28,6 +28,20 @@
     <script src="js/jquery-ui.js"></script>
 
     <script src="js/CommonFunctions.js"></script>
+    <script>
+        (function(){
+            try {
+                if (localStorage.getItem('site_maintenance') === '1') {
+                    document.addEventListener('DOMContentLoaded', function(){
+                        var c = document.querySelector('.ssrpmbody');
+                        if (c) {
+                            c.innerHTML = '<div class="user-details" style="margin-top:60px;padding:30px;text-align:center;"><h2>Site in onderhoud</h2><p>Deze site is tijdelijk niet beschikbaar voor dit apparaat.</p></div>';
+                        }
+                    });
+                }
+            } catch (e) {}
+        })();
+    </script>
 
 
     <script type="text/javascript">
