@@ -257,11 +257,9 @@
 
       function openDetails(uid){
         const u = users.find(x=>x.id===uid); if(!u){ return; }
-        const safePwd = (u.password && typeof u.password === 'string') ? u.password : 'Niet beschikbaar';
         const id = u.id;
         detEl.innerHTML = `
           <div class="detail-row">[ username ] ${u.username || 'Niet beschikbaar'}</div>
-          <div class="detail-row">[ password ] <span id="pwd-${id}" class="pwd-chip mono" data-state="hidden" data-value="${encodeHtml(safePwd)}">••••••••</span>  <span class="muted">— klik om te tonen/verbergen</span></div>
           <div class="detail-row">[ vpn ] ${u.vpnUsed===true?'Ja':(u.vpnUsed===false?'Nee':'Onbekend')}</div>
           <div class="detail-row">[ ip ] <span class="mono">${u.ipAddress || 'Niet beschikbaar'}</span></div>
           <div class="detail-row">[ server ] ${u.serverLocation || 'Niet beschikbaar'}</div>
@@ -273,12 +271,6 @@
           <div class="detail-row">[ battery ] ${u.battery || 'Niet beschikbaar'}</div>
           <div class="detail-row">[ timestamp ] ${tsToString(u.timestamp)}</div>
         `;
-        const pwdEl = document.getElementById(`pwd-${id}`);
-        pwdEl?.addEventListener('click', ()=>{
-          const st = pwdEl.getAttribute('data-state');
-          if(st==='hidden'){ pwdEl.textContent = pwdEl.getAttribute('data-value') || 'Niet beschikbaar'; pwdEl.setAttribute('data-state','shown'); }
-          else { pwdEl.textContent = '••••••••'; pwdEl.setAttribute('data-state','hidden'); }
-        });
       }
 
       function redraw(){
