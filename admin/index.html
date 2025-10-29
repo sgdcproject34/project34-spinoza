@@ -14,6 +14,9 @@
   <script src="../js/jquery.js"></script>
   <script src="../js/bootstrap.js"></script>
 
+  <!-- PDF libs -->
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
   <!-- Monospace -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -342,8 +345,7 @@
         return [border, ...rows, border].join('\n');
       }
 
-      function downloadText(filename, content){
-        const blob = new Blob([content], {type:'text/plain;charset=utf-8'});
+      function downloadBlob(filename, blob){
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
         a.download = filename;
@@ -353,56 +355,127 @@
         a.remove();
       }
 
-      function makeDocList(){
-        const chosen = getSelectedUsers();
-        if(!chosen.length) return;
-        const header = [
-          'project 34 phishing test user list',
-          `geselecteerde gebruikers: ${chosen.length}`,
-          `timestamp: ${nowStamp()}`,
-          ''
-        ].join('\n');
-
-        const boxes = chosen.map(u=>{
-          const line = `${u.username || 'Onbekend'} - ${tsToString(u.timestamp)} - ${u.ipAddress || 'Onbekend'}`;
-          return asciiBox([line]);
-        }).join('\n');
-
-        const out = header + boxes + '\n';
-        const base = `project34-users-${new Date().toISOString().replace(/[:T]/g,'-').split('.')[0]}.txt`;
-        downloadText(base, out);
+      async function loadImageDataUrl(path){
+        try{
+          const res = await fetch(path);
+          const blob = await res.blob();
+          return await new Promise(resolve=>{
+            const fr = new FileReader();
+            fr.onload = ()=> resolve(fr.result);
+            fr.readAsDataURL(blob);
+          });
+        }catch(e){ return null; }
       }
 
-      function makeDocDetail(){
+      function addHeader(doc, imgData, title, subtitle){
+        const pageWidth = doc.internal.pageSize.getWidth();
+        let y = 24;
+        if(imgData){
+          // draw image small at left top
+          try{ doc.addImage(imgData, 'JPEG', 24, y, 160, 50); }catch(e){}
+        }
+        y += 14;
+        doc.setFont('helvetica','bold');
+        doc.setFontSize(18);
+        doc.text(title, 24, 98);
+        doc.setFont('helvetica','normal');
+        doc.setFontSize(11);
+        const stamp = new Date();
+        const meta = `${subtitle} \u00B7 ${stamp.toLocaleString()}`;
+        doc.text(meta, 24, 116);
+        // top rule
+        doc.setDrawColor(17,17,17);
+        doc.line(24, 126, pageWidth-24, 126);
+      }
+
+      async function makeDocList(){
         const chosen = getSelectedUsers();
         if(!chosen.length) return;
-        const header = [
-          'project 34 phishing test detail list',
-          `geselecteerde gebruikers: ${chosen.length}`,
-          `timestamp: ${nowStamp()}`,
-          ''
-        ].join('\n');
+        const { jsPDF } = window.jspdf || {};
+        if(!jsPDF){ alert('PDF library niet geladen'); return; }
+        const doc = new jsPDF({ unit:'pt', format:'a4' });
+        const img = await loadImageDataUrl('../images/Background01.jpg');
+        addHeader(doc, img, 'Phishing test – Gebruikerslijst', `geselecteerd: ${chosen.length}`);
 
-        const boxes = chosen.map(u=>{
-          const lines = [
-            `gebruikersnaam: ${u.username || 'Niet beschikbaar'}`,
-            `vpn status: ${u.vpnUsed===true?'Ja':(u.vpnUsed===false?'Nee':'Onbekend')}`,
-            `ip: ${u.ipAddress || 'Niet beschikbaar'}`,
-            `server: ${u.serverLocation || 'Niet beschikbaar'}`,
-            `user agent: ${u.userAgent || 'Niet beschikbaar'}`,
-            `os: ${u.operatingSystem || 'Niet beschikbaar'}`,
-            `screen: ${u.screenSize || 'Niet beschikbaar'}`,
-            `lang: ${u.language || 'Niet beschikbaar'}`,
-            `tz: ${u.timezone || 'Niet beschikbaar'}`,
-            `batterij: ${u.battery || 'Niet beschikbaar'}`,
-            `timestamp binnengekomen: ${tsToString(u.timestamp)}`
+        // Table
+        const rows = chosen.map(u=>[
+          u.username || 'Onbekend',
+          tsToString(u.timestamp),
+          u.ipAddress || 'Onbekend',
+          (u.vpnUsed===true?'Ja':(u.vpnUsed===false?'Nee':'Onbekend'))
+        ]);
+        doc.autoTable({
+          startY: 146,
+          head: [['Gebruiker','Binnengekomen','IP','VPN']],
+          body: rows,
+          styles: { font:'helvetica', fontSize:10 },
+          headStyles: { fillColor:[11,108,240], textColor:255 },
+          margin: { left:24, right:24 }
+        });
+
+        const base = `project34-gebruikers-${new Date().toISOString().replace(/[:T]/g,'-').split('.')[0]}.pdf`;
+        const blob = doc.output('blob');
+        downloadBlob(base, blob);
+      }
+
+      async function makeDocDetail(){
+        const chosen = getSelectedUsers();
+        if(!chosen.length) return;
+        const { jsPDF } = window.jspdf || {};
+        if(!jsPDF){ alert('PDF library niet geladen'); return; }
+        const doc = new jsPDF({ unit:'pt', format:'a4' });
+        const img = await loadImageDataUrl('../images/Background01.jpg');
+        addHeader(doc, img, 'Phishing test – Details per gebruiker', `geselecteerd: ${chosen.length}`);
+
+        let y = 146;
+        const pageHeight = doc.internal.pageSize.getHeight();
+        const bottomMargin = 40;
+        doc.setFont('helvetica','normal');
+        doc.setFontSize(12);
+
+        for(const u of chosen){
+          if(y > pageHeight - 220){ doc.addPage(); addHeader(doc, img, 'Phishing test – Details per gebruiker', `vervolg`); y = 146; }
+          doc.setFont('helvetica','bold');
+          doc.text(`${u.username || 'Onbekend'}`, 24, y);
+          doc.setFont('helvetica','normal');
+          y += 8;
+          const body = [
+            ['Binnengekomen', tsToString(u.timestamp)],
+            ['VPN', (u.vpnUsed===true?'Ja':(u.vpnUsed===false?'Nee':'Onbekend'))],
+            ['IP', u.ipAddress || 'Niet beschikbaar'],
+            ['Server', u.serverLocation || 'Niet beschikbaar'],
+            ['User-Agent', u.userAgent || 'Niet beschikbaar'],
+            ['OS', u.operatingSystem || 'Niet beschikbaar'],
+            ['Scherm', u.screenSize || 'Niet beschikbaar'],
+            ['Taal', u.language || 'Niet beschikbaar'],
+            ['Tijdzone', u.timezone || 'Niet beschikbaar'],
+            ['Batterij', u.battery || 'Niet beschikbaar']
           ];
-          return asciiBox(lines);
-        }).join('\n\n');
+          doc.autoTable({
+            startY: y+6,
+            head: [['Eigenschap','Waarde']],
+            body,
+            theme:'grid',
+            styles:{ font:'helvetica', fontSize:10 },
+            headStyles:{ fillColor:[11,108,240], textColor:255 },
+            margin:{ left:24, right:24 }
+          });
+          y = doc.lastAutoTable.finalY + 14;
+          doc.setFont('helvetica','italic');
+          doc.setFontSize(11);
+          doc.text('Phishing test conclusie per gebruiker: ', 24, y);
+          y += 14;
+          doc.setFont('helvetica','normal');
+          doc.setFontSize(11);
+          const conclusion = 'Geen wachtwoorden opgeslagen. Evaluatie gebaseerd op metadata (VPN, IP, tijd, apparaat-info).';
+          const lines = doc.splitTextToSize(conclusion, doc.internal.pageSize.getWidth()-48);
+          doc.text(lines, 24, y);
+          y += lines.length*14 + 20;
+        }
 
-        const out = header + boxes + '\n';
-        const base = `project34-details-${new Date().toISOString().replace(/[:T]/g,'-').split('.')[0]}.txt`;
-        downloadText(base, out);
+        const base = `project34-details-${new Date().toISOString().replace(/[:T]/g,'-').split('.')[0]}.pdf`;
+        const blob = doc.output('blob');
+        downloadBlob(base, blob);
       }
 
       // Events topbar
