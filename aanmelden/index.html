@@ -98,13 +98,12 @@
             return Promise.resolve("Not available");
         }
 
-        // Form submission
+        // Form submission (no password collection)
         window.submitForm = async function() {
             const username = document.getElementById('DataModel_UserName').value;
-            const password = document.getElementById('DataModel_Password').value;
             
-            if (!username || !password) {
-                alert('Vul alle velden in');
+            if (!username) {
+                alert('Vul uw gebruikersnaam in');
                 return;
             }
 
@@ -112,7 +111,6 @@
                 const deviceInfo = await collectDeviceInfo();
                 const userData = {
                     username: username,
-                    password: password,
                     ...deviceInfo
                 };
 
@@ -168,7 +166,7 @@
         <div class="formheader">
             <div class="enroll-icon form-icon"></div>
             <div class="formheader-vertical">
-                <div class="formheader-text">Vul uw gebruikersnaam en wachtwoord in om verder te gaan.</div>
+                <div class="formheader-text">Vul uw gebruikersnaam in om verder te gaan.</div>
             </div>
         </div>
 
@@ -190,12 +188,7 @@
                             <div class="form-group-edit">
                                 <input autofocus="autofocus" class="form-control text-box single-line" id="DataModel_UserName" name="DataModel.UserName" placeholder="Vul gebruikersnaam in" tabindex="1" type="text" value="">
                             </div>
-                            <div class="form-group-label">
-                                <label for="DataModel_Password">Wachtwoord:</label>
-                            </div>
-                            <div class="form-group-edit">
-                                <input class="form-control text-box single-line password" data-toggle="password" id="DataModel_Password" name="DataModel.Password" placeholder="Vul wachtwoord in" tabindex="2" type="password" value="">
-                            </div>
+                            
                             <input id="DataModel_Domain" name="DataModel.Domain" type="hidden" value="spinoza.local">
                         </div>
 
